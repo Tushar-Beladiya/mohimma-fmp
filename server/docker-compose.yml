@@ -1,0 +1,33 @@
+volumes:
+  nextcloud:
+  db:
+
+services:
+  db:
+    image: postgres:16
+    restart: always
+    volumes:
+      - db:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_PASSWORD=123456789
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nextcloud"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    image: nextcloud
+    restart: always
+    ports:
+      - 8080:80
+    depends_on:
+      - db
+    volumes:
+      - nextcloud:/var/www/html
+    environment:
+      - POSTGRES_PASSWORD=123456789
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=postgres
