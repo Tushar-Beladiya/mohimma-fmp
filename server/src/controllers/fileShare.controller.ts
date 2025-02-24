@@ -30,24 +30,34 @@ export const shareFileAsPublic = async (req: Request, res: Response): Promise<vo
   }
 };
 
-export const shareFileAsPrivate = async (req: Request, res: Response): Promise<void> => {
+export const shareFileAsPrivate = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const { filePath } = req.query;
+    const { filePath, password } = req.query;
 
-    if (!filePath) {
-      res.status(400).json({ success: false, message: 'filePath and shareWith are required' });
+    if (!filePath && !password) {
+      return res.status(400).json({ success: false, message: 'filePath and password are required' });
     }
 
-    const shareUrl = await fileShareService.shareFileAsPrivate(filePath as string, '132');
+    //VALIDATION FOR STRONG PASSWORD THAT WOULD BE CHARACTER, SPACIAL CHARATER, NUMBER, AND MINIMUM OF 8 CHARACTERS like it would be StrongP@ssw0rd!
 
-    res.status(200).json({
+    const passwordRegex = new RegExp('^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$');
+    if (!passwordRegex.test(password as string)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must contain at least 8 characters, one letter, one number and one special character',
+      });
+    }
+
+    const shareUrl = await fileShareService.shareFileAsPrivate(filePath as string, password as string);
+
+    return res.status(200).json({
       success: true,
       message: 'File shared successfully',
       result: shareUrl,
     });
   } catch (error) {
     console.error('❌ Error sharing file:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
       message: 'Failed to share file',
       error: error.message,

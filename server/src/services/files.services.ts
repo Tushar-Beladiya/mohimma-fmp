@@ -67,30 +67,6 @@ export const downloadFile = async (file: NextcloudFile | null): Promise<Buffer> 
   try {
     if (file) {
       const fileBuffer = await file.getContent();
-
-      // Method 1: Check PDF magic number
-      const isPDF = fileBuffer.slice(0, 4).toString() === '%PDF';
-
-      // Method 2: Check file size
-      const sizeInMB = fileBuffer.length / (1024 * 1024);
-
-      // Method 3: Log first few bytes for inspection
-      const firstBytes = fileBuffer.slice(0, 50).toString('hex');
-
-      // Method 4: Check if buffer is corrupted
-      const isCorrupted = fileBuffer.length === 0 || !Buffer.isBuffer(fileBuffer);
-
-      // Debug information
-      console.log({
-        isPDF,
-        sizeInMB,
-        firstBytes,
-        isCorrupted,
-        bufferLength: fileBuffer.length,
-        // Log first 100 characters if it's text
-        preview: fileBuffer.slice(0, 100).toString(),
-      });
-
       return fileBuffer;
     }
   } catch (error) {
@@ -98,4 +74,61 @@ export const downloadFile = async (file: NextcloudFile | null): Promise<Buffer> 
     return Buffer.from('');
   }
   return Buffer.from('');
+};
+
+export const deleteFile = async (filePath: string): Promise<string> => {
+  try {
+    const file = await client.getFile(filePath);
+    if (file) {
+      await file.delete();
+      return `File ${filePath} deleted successfully.`;
+    }
+  } catch (error) {
+    console.error(error);
+    return '';
+  }
+  return '';
+};
+
+export const copyFile = async (sourcePath: string, destinationPath: string): Promise<string> => {
+  try {
+    const sourceFile = await client.getFile(sourcePath);
+    const destinationFolder = await client.getFolder(destinationPath);
+
+    if (sourceFile && destinationFolder) {
+      // Read the content of the source file
+      const content = await sourceFile.getContent();
+      console.log(sourceFile.name);
+      // Create the duplicate file with the same content
+      await destinationFolder.createFile(`${sourceFile.name.split('/').pop()}-copy` || 'copy-file', content);
+      return destinationPath;
+    }
+  } catch (error) {
+    console.error(error);
+    return '';
+  }
+  return '';
+};
+
+export const renameFile = async (filePath: string, newFileName: string): Promise<string> => {
+  try {
+    const file = await client.getFile(filePath);
+    if (file) {
+      // Extract file extension
+      const extensionMatch = filePath.match(/\.[^.]+$/); // Matches last dot followed by characters
+      const extension = extensionMatch ? extensionMatch[0] : ''; // Keep extension if found
+
+      // Append original extension to new file name
+      const newFilePath = filePath.replace(/[^/]+$/, `${newFileName}${extension}`);
+
+      // Move the file with its extension
+      await file.move(newFilePath);
+
+      return newFilePath;
+    }
+  } catch (error) {
+    console.error('Rename failed:', error);
+    return '';
+  }
+  return '';
 };

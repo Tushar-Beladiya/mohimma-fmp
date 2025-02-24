@@ -7,5 +7,8 @@ const router = Router();
 
 router.post('/upload', upload.single('file'), filesController.uploadFile);
 router.get('/download', filesController.downloadFile);
+router.delete('/delete', filesController.deleteFile);
+router.put('/copy', filesController.copyFile);
+router.put('/rename', filesController.renameFile);
 
 export default router;

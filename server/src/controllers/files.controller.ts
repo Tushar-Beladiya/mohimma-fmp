@@ -73,3 +73,84 @@ export const downloadFile = async (req: Request, res: Response): Promise<void> =
     });
   }
 };
+
+export const deleteFile = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { filePath } = req.query;
+
+    if (!filePath || typeof filePath !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing or invalid filePath parameter.',
+      });
+    }
+
+    const path = await filesService.deleteFile(filePath);
+
+    return res.status(200).json({
+      success: true,
+      message: `File deleted successfully`,
+      result: path,
+    });
+  } catch (error) {
+    console.error('❌ Error deleting file:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Internal server error',
+    });
+  }
+};
+
+export const copyFile = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { sourcePath, destinationPath } = req.body;
+
+    if (!sourcePath || !destinationPath) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing sourcePath or destinationPath parameter.',
+      });
+    }
+
+    const path = await filesService.copyFile(sourcePath, destinationPath);
+
+    return res.status(200).json({
+      success: true,
+      message: `File copied successfully`,
+      result: path,
+    });
+  } catch (error) {
+    console.error('❌ Error copying file:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Internal server error',
+    });
+  }
+};
+
+export const renameFile = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { filePath, newFileName } = req.body;
+
+    if (!filePath || !newFileName) {
+      return res.status(400).json({
+        success: false,
+        message: 'Missing filePath or newFileName parameter.',
+      });
+    }
+
+    const path = await filesService.renameFile(filePath, newFileName);
+
+    return res.status(200).json({
+      success: true,
+      message: `File renamed successfully`,
+      result: path,
+    });
+  } catch (error) {
+    console.error('❌ Error renaming file:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Internal server error',
+    });
+  }
+};

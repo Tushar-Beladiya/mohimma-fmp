@@ -13,7 +13,6 @@ interface BreadcrumbProps {
 const Breadcrumb: React.FC<BreadcrumbProps> = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { folderPath, setFolderPath } = useFolder();
-  console.log("Breadcrumb folderPath:", folderPath);
   const { uploadFileLoading } = useSelector((state: RootState) => state.file);
   const parts = folderPath.split("/").filter(Boolean);
 
@@ -47,7 +46,8 @@ const Breadcrumb: React.FC<BreadcrumbProps> = () => {
           <li key={index} className="inline cursor-pointer">
             <span
               onClick={() => handleClick(index)}
-              className="hover:underline text-blue-500">
+              className="hover:underline text-blue-500"
+            >
               {part}
             </span>
             {index !== parts.length - 1 && <span> / </span>}

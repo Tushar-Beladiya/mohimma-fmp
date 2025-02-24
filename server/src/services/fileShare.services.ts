@@ -30,24 +30,20 @@ export const shareFile = async (filePath: string): Promise<string> => {
   }
 };
 
-export const shareFileAsPrivate = async (filePath: string, password: '132'): Promise<string> => {
+export const shareFileAsPrivate = async (filePath: string, password: string): Promise<string> => {
   try {
     const file = await client.getFile(filePath);
+
     if (!file) {
       throw new Error('File not found on Nextcloud');
     }
+    const createShare: ICreateShare = { fileSystemElement: file }; // Change from fileSystemElement
 
-    let shareOptions: ICreateShare = {
-      fileSystemElement: file,
-      publicUpload: false,
-      password: password,
-    };
+    const share = await client.createShare(createShare);
 
-    const share = await client.createShare(shareOptions);
+    await share.setPassword(password);
 
-    if (!share || !share.url) {
-      throw new Error('Failed to create share link');
-    }
+    // await share.setNote('some note\nnew line');
 
     return share.url;
   } catch (error) {
