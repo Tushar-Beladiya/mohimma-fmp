@@ -66,3 +66,41 @@ export const getFilesAndFolders = async (req: Request, res: Response): Promise<R
     });
   }
 };
+
+export const downloadFolder = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { folderPath } = req.query;
+    const folder = await foldersService.downloadFolder(folderPath as string);
+    res.status(200).json({
+      success: true,
+      message: 'folders fetched successfully',
+      result: folder,
+    });
+  } catch (error) {
+    console.error('❌ Error downloading folder:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Internal server error',
+    });
+  }
+};
+
+export const renameFolder = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { folderPath, newFolderName } = req.body;
+    if (!folderPath || !newFolderName) {
+      return res.status(400).json({ success: false, message: 'Folder name and new folder name are required' });
+    }
+    await foldersService.renameFolder(folderPath, newFolderName);
+    return res.status(200).json({
+      success: true,
+      message: `${folderPath} folder renamed to ${newFolderName} successfully`,
+    });
+  } catch (error) {
+    console.error('❌ Error renaming folder:', error);
+    return res.status(500).json({
+      success: false,
+      message: error.message || 'Internal server error',
+    });
+  }
+};

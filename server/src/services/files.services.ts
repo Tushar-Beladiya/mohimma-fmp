@@ -98,10 +98,29 @@ export const copyFile = async (sourcePath: string, destinationPath: string): Pro
     if (sourceFile && destinationFolder) {
       // Read the content of the source file
       const content = await sourceFile.getContent();
-      console.log(sourceFile.name);
-      // Create the duplicate file with the same content
-      await destinationFolder.createFile(`${sourceFile.name.split('/').pop()}-copy` || 'copy-file', content);
-      return destinationPath;
+
+      // Extract the file name and extension
+      const fileName = sourceFile.name.split('/').pop(); // Get file name
+      if (!fileName) throw new Error('File name is undefined');
+      const match = fileName.match(/(.*?)(\.[^.]+)?$/);
+      if (!match) throw new Error('File name match is null');
+      const [name, extension] = match.slice(1); // Separate name & extension
+
+      // Get list of files in destination folder
+      const existingFiles = await destinationFolder.getFiles();
+      const existingFileNames = existingFiles.map((file) => file.name);
+
+      // Generate a unique file name by appending an index if needed
+      let newFileName = fileName;
+      let index = 1;
+      while (existingFileNames.some((n) => n.includes(newFileName))) {
+        newFileName = `${name} (${index})${extension || ''}`;
+        index++;
+      }
+      // Create the duplicate file with the unique name
+      await destinationFolder.createFile(newFileName, content);
+
+      return `${destinationPath}${newFileName}`;
     }
   } catch (error) {
     console.error(error);

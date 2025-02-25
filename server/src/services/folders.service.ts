@@ -1,6 +1,5 @@
 import Client, { Folder } from 'nextcloud-node-client';
 import { FileItem, FolderContents, FolderItem } from 'src/types/folders.types';
-
 const client = new Client();
 
 export const createFolder = async (folderName: string, subFolderPath?: string): Promise<Folder> => {
@@ -74,5 +73,55 @@ export const getFilesAndFolders = async (folderPath: string, subFolderPath?: str
     };
   } catch (error) {
     throw new Error(error.message || 'Internal server error');
+  }
+};
+
+export const renameFolder = async (folderPath: string, newFolderName: string): Promise<void> => {
+  try {
+    // Get the folder to rename
+    const folder = await client.getFolder(folderPath);
+
+    // Rename the folder
+    await folder?.move(folderPath.replace(/[^/]+$/, newFolderName));
+    console.log(`Folder renamed successfully to: ${newFolderName}`);
+  } catch (error) {
+    throw new Error(error.message || 'Internal server error');
+  }
+};
+
+export const downloadFolder = async (folderPath: string): Promise<Record<string, string>> => {
+  try {
+    const sourceFolder: Folder | null = await client.getFolder(folderPath);
+    if (!sourceFolder) {
+      throw new Error('Folder not found');
+    }
+
+    // Map to store file contents
+    const fileContents: Record<string, string> = {};
+
+    const processFolder = async (folder: Folder, currentPath: string) => {
+      // Fetch files directly as buffers
+      const files = await folder.getFiles();
+      for (const file of files) {
+        const fileBuffer = await file.getContent();
+        if (!fileBuffer) {
+          throw new Error(`Failed to retrieve buffer for file: ${file.name}`);
+        }
+        const relativePath = currentPath.replace(folderPath, '').replace(/^\//, '') + '/' + file.name;
+        fileContents[relativePath] = fileBuffer.toString('base64');
+      }
+
+      // Recursively process subfolders
+      const subfolders = await folder.getSubFolders();
+      for (const subfolder of subfolders) {
+        await processFolder(subfolder, currentPath + '/' + subfolder.name);
+      }
+    };
+
+    await processFolder(sourceFolder, folderPath);
+    return fileContents;
+  } catch (error) {
+    console.error('Error retrieving folder contents:', error);
+    throw new Error(error.message || 'Failed to retrieve folder contents');
   }
 };
