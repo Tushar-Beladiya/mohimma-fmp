@@ -60,7 +60,6 @@ export const deleteFolderAsync =
     try {
       dispatch(setLoading(true));
 
-      // Call the API to delete the folder
       const response = await deleteFolderApi(folderName);
 
       if (response) {

@@ -13,7 +13,8 @@ interface BreadcrumbProps {
 const Breadcrumb: React.FC<BreadcrumbProps> = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { folderPath, setFolderPath } = useFolder();
-  const { uploadFileLoading } = useSelector((state: RootState) => state.file);
+  // const { uploadFileLoading } = useSelector((state: RootState) => state.file);
+  const { files } = useSelector((state: RootState) => state.file);
   const parts = folderPath.split("/").filter(Boolean);
 
   useEffect(() => {
@@ -26,7 +27,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = () => {
       );
     };
     fetchData();
-  }, [folderPath, dispatch, uploadFileLoading, setFolderPath]);
+  }, [folderPath, dispatch, setFolderPath, files]);
 
   const handleClick = (index: number) => {
     const subFolderPath = parts.slice(0, index + 1).join("/");
@@ -46,8 +47,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = () => {
           <li key={index} className="inline cursor-pointer">
             <span
               onClick={() => handleClick(index)}
-              className="hover:underline text-blue-500"
-            >
+              className="hover:underline text-blue-500">
               {part}
             </span>
             {index !== parts.length - 1 && <span> / </span>}

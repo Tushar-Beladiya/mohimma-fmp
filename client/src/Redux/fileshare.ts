@@ -42,6 +42,7 @@ const fileShareSlice = createSlice({
       state.isSharing = false;
       state.isShared = true;
       state.shareUrl = action.payload;
+      console.log("action.payload shareurl update", action.payload);
       state.error = null;
     },
     shareFileFailure: (state, action) => {
@@ -55,7 +56,6 @@ const fileShareSlice = createSlice({
 
       if (!state.sharedFiles[filePath]) {
         console.log("path", state.sharedFiles[filePath]);
-
         state.sharedFiles[filePath] = { name: fileName, url: state.shareUrl };
       }
     },

@@ -30,7 +30,7 @@ export const FoldersPage = () => {
     <div className="bg-[#f0f2f5] h-screen">
       <SideBar>
         <div onContextMenu={handleRightClick} className="h-full w-full">
-          <FoldersViews />
+          <FoldersViews showActions={true} />
           <CreateDropDown
             dropdown={dropdown}
             setDropdown={setDropdown}

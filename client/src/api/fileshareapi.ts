@@ -1,15 +1,7 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:8001/api/fileshare";
+const API_URL = `${process.env.REACT_APP_BACKEND_URL}/api/fileshare`;
 
-/**
- * Shares a file publicly.
- *
- * @param {string} filePath - The path of the file to be shared.
- * @param {boolean} [publicAccess=false] - Optional flag to allow public access.
- * @returns {Promise<Object>} - Response data from the API.
- * @throws {Error} - Throws an error if the request fails.
- */
 export const shareFileApi = async (
   filePath: string,
   publicAccess: boolean = false
@@ -29,5 +21,19 @@ export const shareFileApi = async (
     throw new Error(
       "Error sharing file: " + (error.response?.data?.message || error.message)
     );
+  }
+};
+
+export const shareFileAsPrivateApi = async (
+  filePath: string,
+  password: string
+) => {
+  try {
+    const response = await axios.get(`${API_URL}/private`, {
+      params: { filePath, password },
+    });
+    return response.data;
+  } catch (error: any) {
+    throw error.response?.data?.message || error.message; // Throw only a string message
   }
 };

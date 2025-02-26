@@ -1,7 +1,10 @@
 import axios from "axios";
 import { createClient, FileStat } from "webdav";
 
-const API_URL = "http://localhost:8001/api/file";
+const API_URL = `${process.env.REACT_APP_BACKEND_URL}/api/file`;
+
+console.log("API_URL", API_URL);
+
 //
 export const uploadFileApi = async (
   file: File,
@@ -81,6 +84,53 @@ export const downloadFileApi = async (filePath: string) => {
     throw new Error(
       "Error downloading file: " +
         (error.response?.data?.message || error.message)
+    );
+  }
+};
+
+export const deleteFileApi = async (filePath: string) => {
+  try {
+    console.log("delete file api call");
+
+    const response = await axios.delete(`${API_URL}/delete`, {
+      params: { filePath },
+    });
+
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      "Error deleting file: " + (error.response?.data?.message || error.message)
+    );
+  }
+};
+
+export const copyFileApi = async (
+  sourcePath: string,
+  destinationPath: string
+) => {
+  const requestBody = { sourcePath, destinationPath };
+  try {
+    const response = await axios.put(`${API_URL}/copy`, requestBody);
+    console.log("response from copy file api", response.data);
+
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      "Error copying file: " + (error.response?.data?.message || error.message)
+    );
+  }
+};
+
+export const renameFileApi = async (filePath: string, newFileName: string) => {
+  const requestBody = { filePath, newFileName };
+  try {
+    const response = await axios.put(`${API_URL}/rename`, requestBody);
+    console.log("response from rename file api", response.data);
+
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      "Error renaming file: " + (error.response?.data?.message || error.message)
     );
   }
 };

@@ -5,8 +5,17 @@ import {
   downloadFileStart,
   downloadFileSuccess,
   downloadFileFailure,
+  removeFile,
+  copyFile,
+  renameFile,
 } from "./files";
-import { downloadFileApi, uploadFileApi } from "../api/fileapi";
+import {
+  copyFileApi,
+  deleteFileApi,
+  downloadFileApi,
+  renameFileApi,
+  uploadFileApi,
+} from "../api/fileapi";
 import { AppDispatch } from "./store";
 
 export const uploadFileAsync =
@@ -47,5 +56,39 @@ export const downloadFileAsync =
       dispatch(downloadFileFailure(error.message));
     } finally {
       dispatch(downloadFileStart(false));
+    }
+  };
+
+export const deleteFileAsync =
+  (filePath: string) => async (dispatch: AppDispatch) => {
+    try {
+      await deleteFileApi(filePath);
+
+      dispatch(removeFile(filePath));
+    } catch (error: any) {
+      console.error("Error removing file:", error.message);
+    }
+  };
+
+export const copyFileAsync =
+  (sourcePath: string, destinationPath: string) =>
+  async (dispatch: AppDispatch) => {
+    try {
+      const response = await copyFileApi(sourcePath, destinationPath);
+      dispatch(copyFile(response));
+      console.log("response from copy file", response);
+    } catch (error: any) {
+      console.error("Error copying file:", error.message);
+    }
+  };
+
+export const renameFileAsync =
+  (filePath: string, newFileName: string) => async (dispatch: AppDispatch) => {
+    try {
+      const response = await renameFileApi(filePath, newFileName);
+      dispatch(renameFile(response));
+      console.log("response from rename file", response);
+    } catch (error: any) {
+      console.error("Error renaming file:", error.message);
     }
   };

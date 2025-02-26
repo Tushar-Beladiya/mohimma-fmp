@@ -1,102 +1,46 @@
 import { useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { RootState, AppDispatch } from "../../../Redux/store";
-import { deleteFolderAsync, getFoldersAsync } from "../../../Redux/folderThunk";
-import { downloadFileAsync } from "../../../Redux/fileThunk";
-import { shareFile } from "../../../Redux/fileshareThunk";
-import { PiFolderSimple } from "react-icons/pi";
 import { FaRegFileAlt } from "react-icons/fa";
+import { PiFolderSimple } from "react-icons/pi";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteFileAsync, downloadFileAsync } from "../../../Redux/fileThunk";
+import { shareFile } from "../../../Redux/fileshareThunk";
+import { deleteFolderAsync, getFoldersAsync } from "../../../Redux/folderThunk";
+import { AppDispatch, RootState } from "../../../Redux/store";
 
-import {
-  AiOutlineDownload,
-  AiOutlineLink,
-  AiOutlineShareAlt,
-} from "react-icons/ai";
 import toast from "react-hot-toast";
-import { MdOutlineDeleteOutline } from "react-icons/md";
+import { AiOutlineDownload } from "react-icons/ai";
+import {
+  MdOutlineDeleteOutline,
+  MdOutlineFileCopy,
+  MdOutlineDriveFileRenameOutline,
+} from "react-icons/md";
 import Breadcrumb from "../../../common/BreadCrumb";
-// import axios from "axios";
-// import { createClient, FileStat } from "webdav";
-// import { fetchDirectoryContents } from "../../../api/fileapi";
-import Loader from "../../../common/Loader";
-import DropDown from "../../../common/DropDown";
-import { useFolder } from "../../../context/FolderContext";
 import Button from "../../../common/Button";
+import { useFolder } from "../../../context/FolderContext";
+import ChooseDestinationModal from "./component/ChooseDestinationModal";
+import RenameModal from "./component/RenameModal";
+import SetPasswordModal from "./component/SetPasswordModal";
+import ShareDropDown from "./component/ShareDropDown";
 
-interface SharedFile {
-  name: string;
-  url: string;
-  isPublic?: boolean;
-}
-
-interface folderViewProps {
-  // folderPath: string;
-  // setFolderPath: React.Dispatch<React.SetStateAction<string>>;
-}
-
-export const FoldersViews: React.FC<folderViewProps> = ({}) => {
+export const FoldersViews = ({ showActions }: { showActions: boolean }) => {
   const dispatch = useDispatch<AppDispatch>();
-  // useEffect(() => {
-  //   const loadFiles = async () => {
-  //     const contents = await fetchDirectoryContents();
-  //     setContentFiles(contents);
-  //     setContentLoading(false);
-  //   };
-
-  //   loadFiles();
-  // }, []);
-
-  // const [imageUrl, setImageUrl] = useState("");
-
-  // // Nextcloud WebDAV settings (replace with your actual Nextcloud server settings)
-  // const client = createClient("http://localhost:8080/remote.php/webdav", {
-  //   username: "admin",
-  //   password: "123456789",
-  // });
-
-  // const nextcloudFilePath = "/Photos/customer.png";
-
-  // useEffect(() => {
-  //   const fetchImage = async () => {
-  //     try {
-  //       // Fetch the image file from WebDAV
-  //       const fileContents = await client.getFileContents(nextcloudFilePath);
-  //       // Convert the file contents to a Blob
-  //       const blob = new Blob([new Uint8Array(fileContents as ArrayBuffer)], {
-  //         type: "image/png",
-  //       });
-
-  //       // Create a URL for the Blob and set it for the image preview
-  //       const imageUrl = URL.createObjectURL(blob);
-  //       setImageUrl(imageUrl);
-  //       console.log("imageUrl====", imageUrl);
-  //     } catch (error) {
-  //       console.error("Error fetching image from WebDAV:", error);
-  //     }
-  //   };
-
-  //   fetchImage();
-  // }, []);
 
   // Select Redux State
   const folders = useSelector((state: RootState) => state.folders.folders);
   const files = useSelector((state: RootState) => state.folders.files);
-  const { uploadFileLoading, downloadFileLoading, fileUploadPath } =
-    useSelector((state: RootState) => state.file);
-  const { shareUrl } = useSelector((state: RootState) => state.fileShare);
-  const [openDropdown, setOpenDropdown] = useState<number | null>(null);
-  const { folderPath, setFolderPath } = useFolder();
+  const { downloadFileLoading } = useSelector((state: RootState) => state.file);
+  const [showChooseDestinationModal, setShowChooseDestinationModal] =
+    useState<boolean>(false);
+  const [standardPath, setStandardPath] = useState("");
+  const [showRenameModal, setShowRenameModal] = useState(false);
+  const [fileNameforRename, setFileNameforRename] = useState("");
+  const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
+  const { setFolderPath } = useFolder();
   // Function to copy link to clipboard
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success("Link copied to clipboard!");
   };
-
-  // useEffect(() => {
-  //   dispatch(getFoldersAsync({}));
-  //   setFolderPath("");
-  //   return;
-  // }, [dispatch]);
 
   // 🔹 Handlers
   const handleFolderClick = (name: string, path: string) => {
@@ -125,24 +69,9 @@ export const FoldersViews: React.FC<folderViewProps> = ({}) => {
     }
   };
 
-  //  file visibility
-  // async function getFileContent(filePath: string) {
-  //   const response = await axios({
-  //     method: "GET",
-  //     url: "http://localhost:8080/remote.php/dav/files/admin" + filePath,
-  //     auth: {
-  //       username: "admin",
-  //       password: "123456789",
-  //     },
-  //     responseType: "blob",
-  //   });
-  //   return response.data;
-  // }
-
-  // const handleFileVisibility = async (filePath: string) => {
-  //   const response = await getFileContent(filePath);
-  //   console.log("response of get files visibility", response);
-  // };
+  const handleDeleteFile = (filePath: string) => {
+    dispatch(deleteFileAsync(filePath));
+  };
 
   return (
     <div className="flex flex-col gap-4 p-6">
@@ -164,11 +93,13 @@ export const FoldersViews: React.FC<folderViewProps> = ({}) => {
             </div>
             <h1 className="text-lg font-medium">{folder.name}</h1>
           </div>
-          <Button
-            className="bg-red-500 text-white hover:bg-red-600"
-            onClick={() => handleDelete(folder.name)}>
-            <MdOutlineDeleteOutline />
-          </Button>
+          {showActions && (
+            <Button
+              className="bg-red-500 text-white hover:bg-red-600"
+              onClick={() => handleDelete(folder.name)}>
+              <MdOutlineDeleteOutline />
+            </Button>
+          )}
         </div>
       ))}
 
@@ -176,49 +107,86 @@ export const FoldersViews: React.FC<folderViewProps> = ({}) => {
       {files.map((file, index) => (
         <div
           key={file.name}
-          className="bg-gray-100 p-2 rounded-lg shadow-md flex items-center justify-between relative">
-          <div className="flex items-center gap-2">
-            <div className="bg-gray-300 p-2 rounded-xl">
-              <FaRegFileAlt className="text-md" />
+          className="bg-white border border-gray-100 p-3 rounded-lg shadow-sm hover:shadow-md hover:border-blue-100 transition-all duration-200 flex items-center justify-between relative group">
+          <div className="flex items-center gap-3">
+            <div className="bg-blue-50 p-2.5 rounded-lg text-blue-500 group-hover:bg-blue-100 transition-colors">
+              <FaRegFileAlt className="text-lg" />
             </div>
-            <h1 className="text-md font-small">{file.name}</h1>
+            <div>
+              <h1 className="text-gray-800 font-medium">{file.name}</h1>
+            </div>
           </div>
-
-          <div key={file.path} className="flex gap-3 items-center">
-            {/* Download Button */}
-            <Button
-              onClick={() => handleDownload(file.path)}
-              className="bg-blue-500 text-white hover:bg-blue-600">
-              <AiOutlineDownload className="text-lg" />
-            </Button>
-
-            {/* Share Button with Dropdown */}
-            <div className="relative">
-              <Button
-                onClick={() => {
-                  setOpenDropdown(openDropdown === index ? null : index);
-                  handleShare(file.path, file.name);
-                }}
-                className="bg-green-500 text-white hover:bg-green-600">
-                <AiOutlineShareAlt className="text-lg" />
-              </Button>
-              <DropDown
-                dropdown={openDropdown === index}
-                contextMenuPosition={{ x: -100, y: 30 }}>
+          {showActions && (
+            <div key={file.path} className="flex items-center">
+              {/* Action buttons with improved styling */}
+              <div className="flex bg-gray-50 p-1 rounded-lg mr-1 shadow-sm border border-gray-100">
+                {/* Download Button */}
                 <Button
-                  onClick={() => {
-                    copyToClipboard(shareUrl as string);
-                    setOpenDropdown(null);
-                  }}
-                  className="w-full text-left px-4 py-2 text-sm hover:bg-gray-100">
-                  <AiOutlineLink />
-                  Copy Link
+                  onClick={() => handleDownload(file.path)}
+                  className="p-1.5 mx-0.5 rounded-md text-gray-600 hover:bg-blue-500 hover:text-white transition-colors">
+                  <AiOutlineDownload className="text-lg" />
                 </Button>
-              </DropDown>
+
+                {/* Copy Button */}
+                <Button
+                  className="p-1.5 mx-0.5 rounded-md text-gray-600 hover:bg-green-500 hover:text-white transition-colors"
+                  onClick={() => {
+                    setShowChooseDestinationModal(true);
+                    setStandardPath(file.path || "");
+                  }}>
+                  <MdOutlineFileCopy className="text-lg" />
+                </Button>
+
+                {/* Rename Button */}
+                <Button
+                  className="p-1.5 mx-0.5 rounded-md text-gray-600 hover:bg-amber-500 hover:text-white transition-colors"
+                  onClick={() => {
+                    setShowRenameModal(true);
+                    setStandardPath(file.path || "");
+                    setFileNameforRename(file.name || "");
+                  }}>
+                  <MdOutlineDriveFileRenameOutline className="text-lg" />
+                </Button>
+
+                {/* Delete Button */}
+                <Button
+                  onClick={() => handleDeleteFile(file.path || "")}
+                  className="p-1.5 mx-0.5 rounded-md text-gray-600 hover:bg-red-500 hover:text-white transition-colors">
+                  <MdOutlineDeleteOutline className="text-lg" />
+                </Button>
+              </div>
+
+              {/* Share Button with Dropdown */}
+              <div className="relative">
+                <ShareDropDown
+                  file={{ name: file.name || "", path: file.path || "" }}
+                  index={index}
+                  handleShare={handleShare}
+                  copyToClipboard={copyToClipboard}
+                  setStandardPath={setStandardPath}
+                  setShowSetPasswordModal={setShowSetPasswordModal}
+                />
+              </div>
             </div>
-          </div>
+          )}
         </div>
       ))}
+      <ChooseDestinationModal
+        open={showChooseDestinationModal}
+        setOpen={setShowChooseDestinationModal}
+        standardPath={standardPath}
+      />
+      <RenameModal
+        isOpen={showRenameModal}
+        setIsOpen={setShowRenameModal}
+        path={standardPath}
+        fileName={fileNameforRename}
+      />
+      <SetPasswordModal
+        filePath={standardPath}
+        open={showSetPasswordModal}
+        setOpen={setShowSetPasswordModal}
+      />
     </div>
   );
 };

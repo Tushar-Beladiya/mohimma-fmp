@@ -1,7 +1,7 @@
 // api/folderApi.ts
 import axios from "axios";
 
-const API_URL = "http://localhost:8001/api/folder";
+const API_URL = `${process.env.REACT_APP_BACKEND_URL}/api/folder`;
 
 export const createFolderApi = async (
   folderName: string,
