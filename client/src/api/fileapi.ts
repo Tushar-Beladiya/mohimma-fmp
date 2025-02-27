@@ -3,8 +3,6 @@ import { createClient, FileStat } from "webdav";
 
 const API_URL = `${process.env.REACT_APP_BACKEND_URL}/api/file`;
 
-console.log("API_URL", API_URL);
-
 //
 export const uploadFileApi = async (
   file: File,
@@ -39,11 +37,8 @@ export const downloadFileApi = async (filePath: string) => {
   try {
     const response = await axios.get(`${API_URL}/download`, {
       params: { filePath },
-      responseType: "json", // Expect JSON response
+      responseType: "json",
     });
-
-    // Debugging: Check the response structure
-    console.log("Response:", response.data);
 
     // Ensure the response contains expected buffer data
     if (
@@ -90,8 +85,6 @@ export const downloadFileApi = async (filePath: string) => {
 
 export const deleteFileApi = async (filePath: string) => {
   try {
-    console.log("delete file api call");
-
     const response = await axios.delete(`${API_URL}/delete`, {
       params: { filePath },
     });
@@ -111,7 +104,6 @@ export const copyFileApi = async (
   const requestBody = { sourcePath, destinationPath };
   try {
     const response = await axios.put(`${API_URL}/copy`, requestBody);
-    console.log("response from copy file api", response.data);
 
     return response.data;
   } catch (error: any) {
@@ -125,7 +117,6 @@ export const renameFileApi = async (filePath: string, newFileName: string) => {
   const requestBody = { filePath, newFileName };
   try {
     const response = await axios.put(`${API_URL}/rename`, requestBody);
-    console.log("response from rename file api", response.data);
 
     return response.data;
   } catch (error: any) {

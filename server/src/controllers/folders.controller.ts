@@ -29,11 +29,11 @@ export const createFolder = async (req: Request, res: Response): Promise<Respons
 export const deleteFolder = async (req: Request, res: Response): Promise<Response> => {
   try {
     // Extract folder path from request body
-    const { folderName, subFolderPath } = req.body;
+    const { folderName, subFolderPath } = req.query;
     if (!folderName) {
       return res.status(400).json({ success: false, message: 'Folder name is required' });
     }
-    await foldersService.deleteFolder(folderName, subFolderPath);
+    await foldersService.deleteFolder(folderName as string, subFolderPath as string);
     return res.status(200).json({
       success: true,
       message: `${folderName} folder deleted successfully`,
@@ -91,10 +91,11 @@ export const renameFolder = async (req: Request, res: Response): Promise<Respons
     if (!folderPath || !newFolderName) {
       return res.status(400).json({ success: false, message: 'Folder name and new folder name are required' });
     }
-    await foldersService.renameFolder(folderPath, newFolderName);
+    const path = await foldersService.renameFolder(folderPath, newFolderName);
     return res.status(200).json({
       success: true,
       message: `${folderPath} folder renamed to ${newFolderName} successfully`,
+      result: path,
     });
   } catch (error) {
     console.error('❌ Error renaming folder:', error);

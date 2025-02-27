@@ -2,28 +2,30 @@ import { useState } from "react";
 import { AiOutlineShareAlt, AiOutlineLink } from "react-icons/ai";
 import DropDown from "../../../../common/DropDown";
 import Button from "../../../../common/Button";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../../Redux/store";
+import { FaRegShareFromSquare } from "react-icons/fa6";
 
 interface ShareDropDownProps {
-  file: { path: string; name: string };
+  file: { path: string; name: string; isFile: boolean };
   index: number;
   handleShare: (path: string, name: string) => void;
   copyToClipboard: (path: string) => void;
   setStandardPath: React.Dispatch<React.SetStateAction<string>>;
-  setShowSetPasswordModal: React.Dispatch<React.SetStateAction<boolean>>;
+  setPasswordModalData: React.Dispatch<
+    React.SetStateAction<{
+      isOpen: boolean;
+      isPasswordModalForFile: boolean;
+    }>
+  >;
 }
 
 const ShareDropDown: React.FC<ShareDropDownProps> = ({
   file,
   index,
   handleShare,
-  copyToClipboard,
   setStandardPath,
-  setShowSetPasswordModal,
+  setPasswordModalData,
 }) => {
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
-  const { shareUrl } = useSelector((state: RootState) => state.fileShare);
   return (
     <div className="relative">
       <Button
@@ -39,21 +41,26 @@ const ShareDropDown: React.FC<ShareDropDownProps> = ({
             handleShare(file.path, file.name);
             setOpenDropdown(null);
           }}
-          className="w-full text-sm hover:bg-gray-100 p-2 text-left">
+          className="w-full text-sm hover:bg-gray-100 p-2 text-left flex items-center gap-2">
+          <FaRegShareFromSquare />
           Share As Public
         </button>
         <button
           onClick={() => {
             setStandardPath(file.path || "");
-            setShowSetPasswordModal(true);
+            setPasswordModalData({
+              isOpen: true,
+              isPasswordModalForFile: file.isFile ? true : false,
+            });
             setOpenDropdown(null);
           }}
-          className="w-full text-sm hover:bg-gray-100 p-2 text-left">
+          className="w-full text-sm hover:bg-gray-100 p-2 text-left flex items-center gap-2">
+          <FaRegShareFromSquare />
           Share As Private
         </button>
         <button
           onClick={() => {
-            copyToClipboard(shareUrl as string);
+            handleShare(file.path, file.name);
             setOpenDropdown(null);
           }}
           className="w-full text-sm hover:bg-gray-100 p-2 text-left flex items-center gap-2">

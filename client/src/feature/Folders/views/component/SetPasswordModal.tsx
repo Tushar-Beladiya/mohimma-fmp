@@ -3,41 +3,71 @@ import { CommonModal } from "../../../../common/components/Modal";
 import { AppDispatch } from "../../../../Redux/store";
 import { useDispatch } from "react-redux";
 import { shareFileAsPrivate } from "../../../../Redux/fileshareThunk";
+import { shareFolderAsPrivate } from "../../../../Redux/foldershareThunk";
 
 interface SetPasswordModalProps {
+  passwordModalData: {
+    isOpen: boolean;
+    isPasswordModalForFile: boolean;
+  };
   filePath: string;
-  open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setPasswordModalData: React.Dispatch<
+    React.SetStateAction<{
+      isOpen: boolean;
+      isPasswordModalForFile: boolean;
+    }>
+  >;
 }
 
 const passwordRegex = new RegExp(
-  "^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$"
+  "^(?!.*(abcd|1234|xyz|qwerty|password))(?=.*[a-zA-Z])(?=.*[0-9])(?:(?=.*[^a-zA-Z0-9]).{8,}|[a-zA-Z0-9]{8,})$"
 );
 
 const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
   filePath,
-  open,
-  setOpen,
+  passwordModalData: { isOpen: open, isPasswordModalForFile },
+  setPasswordModalData: setOpen,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
+  const bannedWords = ["abcd", "1234", "Xyz", "qwerty", "password"];
+
   const validatePassword = (password: string) => {
+    if (bannedWords.some((word) => password.toLowerCase().includes(word))) {
+      setError(
+        "Enter a stronger password. Avoid common patterns like 'abcd' or '1234'."
+      );
+      return false;
+    }
     const isValid = passwordRegex.test(password);
-    setError(
-      isValid
-        ? ""
-        : "Password must be at least 8 characters long, include a letter, a number, and a special character."
-    );
-    return isValid;
+    if (!isValid) {
+      setError(
+        "Password must be at least 8 characters long, include a letter, a number, and a special character."
+      );
+      return false;
+    }
+
+    setError("");
+    return true;
   };
 
   const HandleShareFileAsPrivate = () => {
     if (!validatePassword(password)) return;
-    console.log("Share file as private with password:", password);
-    dispatch(shareFileAsPrivate(filePath, password));
-    setOpen(false);
+    if (isPasswordModalForFile) {
+      dispatch(shareFileAsPrivate(filePath, password));
+      setOpen({
+        isOpen: false,
+        isPasswordModalForFile: false,
+      });
+    } else {
+      dispatch(shareFolderAsPrivate(filePath, password));
+      setOpen({
+        isOpen: false,
+        isPasswordModalForFile: false,
+      });
+    }
   };
 
   return (
@@ -46,7 +76,10 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
         title="Set Password to share file as a private"
         open={open}
         onClose={() => {
-          setOpen(false);
+          setOpen({
+            isOpen: false,
+            isPasswordModalForFile: false,
+          });
         }}
         onConfirm={HandleShareFileAsPrivate}>
         <div>

@@ -5,16 +5,12 @@ import { AppDispatch, RootState } from "../Redux/store";
 import { Link } from "react-router-dom";
 import { useFolder } from "../context/FolderContext";
 
-interface BreadcrumbProps {
-  // folderPath: string;
-  // setFolderPath: React.Dispatch<React.SetStateAction<string>>;
-}
-
-const Breadcrumb: React.FC<BreadcrumbProps> = () => {
+const Breadcrumb: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { folderPath, setFolderPath } = useFolder();
   // const { uploadFileLoading } = useSelector((state: RootState) => state.file);
   const { files } = useSelector((state: RootState) => state.file);
+  const { folderRename } = useSelector((state: RootState) => state.folders);
   const parts = folderPath.split("/").filter(Boolean);
 
   useEffect(() => {
@@ -27,7 +23,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = () => {
       );
     };
     fetchData();
-  }, [folderPath, dispatch, setFolderPath, files]);
+  }, [folderPath, dispatch, setFolderPath, files, folderRename]);
 
   const handleClick = (index: number) => {
     const subFolderPath = parts.slice(0, index + 1).join("/");

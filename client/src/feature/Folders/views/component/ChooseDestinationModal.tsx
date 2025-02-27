@@ -26,14 +26,11 @@ const ChooseDestinationModal: React.FC<ChooseDestinationModalProps> = ({
 
   const handleCopyFile = () => {
     if (standardPath && folderPath) {
-      console.log("COPYING FILE", standardPath, folderPath);
       dispatch(copyFileAsync(standardPath, folderPath));
     }
     setOpen(false);
   };
 
-  // This is a wrapper component that would be used inside FoldersViews
-  // You'll need to modify FoldersViews to accept this as a prop or extend its functionality
   const FolderItemWithCopyButton = ({
     folder,
     isActive,

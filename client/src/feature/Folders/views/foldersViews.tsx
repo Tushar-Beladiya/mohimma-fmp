@@ -1,26 +1,26 @@
+import { saveAs } from "file-saver";
+import JSZip, { file } from "jszip";
 import { useState } from "react";
 import { FaRegFileAlt } from "react-icons/fa";
 import { PiFolderSimple } from "react-icons/pi";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteFileAsync, downloadFileAsync } from "../../../Redux/fileThunk";
 import { shareFile } from "../../../Redux/fileshareThunk";
-import { deleteFolderAsync, getFoldersAsync } from "../../../Redux/folderThunk";
-import { AppDispatch, RootState } from "../../../Redux/store";
-
-import toast from "react-hot-toast";
-import { AiOutlineDownload } from "react-icons/ai";
 import {
-  MdOutlineDeleteOutline,
-  MdOutlineFileCopy,
-  MdOutlineDriveFileRenameOutline,
-} from "react-icons/md";
+  deleteFolderAsync,
+  downloadFolderAsync,
+  getFoldersAsync,
+} from "../../../Redux/folderThunk";
+import { AppDispatch, RootState } from "../../../Redux/store";
+import toast from "react-hot-toast";
 import Breadcrumb from "../../../common/BreadCrumb";
-import Button from "../../../common/Button";
 import { useFolder } from "../../../context/FolderContext";
 import ChooseDestinationModal from "./component/ChooseDestinationModal";
 import RenameModal from "./component/RenameModal";
 import SetPasswordModal from "./component/SetPasswordModal";
 import ShareDropDown from "./component/ShareDropDown";
+import Actions from "./component/Actions";
+import { shareFolder } from "../../../Redux/foldershareThunk";
 
 export const FoldersViews = ({ showActions }: { showActions: boolean }) => {
   const dispatch = useDispatch<AppDispatch>();
@@ -28,15 +28,19 @@ export const FoldersViews = ({ showActions }: { showActions: boolean }) => {
   // Select Redux State
   const folders = useSelector((state: RootState) => state.folders.folders);
   const files = useSelector((state: RootState) => state.folders.files);
-  const { downloadFileLoading } = useSelector((state: RootState) => state.file);
   const [showChooseDestinationModal, setShowChooseDestinationModal] =
     useState<boolean>(false);
   const [standardPath, setStandardPath] = useState("");
-  const [showRenameModal, setShowRenameModal] = useState(false);
-  const [fileNameforRename, setFileNameforRename] = useState("");
-  const [showSetPasswordModal, setShowSetPasswordModal] = useState(false);
+  const [showRenameModal, setShowRenameModal] = useState({
+    isOpen: false,
+    name: "",
+    isRenameFile: false,
+  });
+  const [passwordModalData, setPasswordModalData] = useState({
+    isOpen: false,
+    isPasswordModalForFile: false,
+  });
   const { setFolderPath } = useFolder();
-  // Function to copy link to clipboard
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast.success("Link copied to clipboard!");
@@ -44,28 +48,33 @@ export const FoldersViews = ({ showActions }: { showActions: boolean }) => {
 
   // 🔹 Handlers
   const handleFolderClick = (name: string, path: string) => {
-    console.log("path", path);
     const subpath = path.replace(/^\//, "");
 
     setFolderPath(subpath);
     dispatch(getFoldersAsync({ name, subFolderPath: subpath }));
   };
 
-  const handleDelete = (name: string) => dispatch(deleteFolderAsync(name));
+  const handleDelete = (name: string, subFolderPath?: string) => {
+    dispatch(deleteFolderAsync(name, subFolderPath));
+  };
 
   const handleDownload = (filePath?: string) => {
-    console.log("filePath from downloads", filePath);
-
     if (filePath) {
-      console.log("loadingFile download", downloadFileLoading);
       dispatch(downloadFileAsync(filePath));
-      console.log("loadingFile2 download", downloadFileLoading);
     }
   };
 
+  const handleDownloadFolder = async (folderPath: string) => {
+    dispatch(downloadFolderAsync(folderPath));
+  };
   const handleShare = (filePath?: string, fileName?: string) => {
     if (filePath && fileName) {
       dispatch(shareFile(filePath));
+    }
+  };
+  const handleShareFolder = (folderPath?: string) => {
+    if (folderPath) {
+      dispatch(shareFolder(folderPath));
     }
   };
 
@@ -81,7 +90,7 @@ export const FoldersViews = ({ showActions }: { showActions: boolean }) => {
       </div>
 
       {/* 🔹 Render Folders */}
-      {folders.map((folder: any) => (
+      {folders.map((folder: any, index) => (
         <div
           key={folder.name}
           className="bg-gray-200/70 p-2 rounded-lg shadow-md hover:shadow-lg cursor-pointer flex items-center justify-between">
@@ -94,11 +103,38 @@ export const FoldersViews = ({ showActions }: { showActions: boolean }) => {
             <h1 className="text-lg font-medium">{folder.name}</h1>
           </div>
           {showActions && (
-            <Button
-              className="bg-red-500 text-white hover:bg-red-600"
-              onClick={() => handleDelete(folder.name)}>
-              <MdOutlineDeleteOutline />
-            </Button>
+            <div className="flex items-center">
+              <Actions
+                isFolder={true}
+                downloadOnClick={() => {
+                  handleDownloadFolder(folder.path);
+                }}
+                renameOnClick={() => {
+                  setShowRenameModal({
+                    isOpen: true,
+                    name: folder.name,
+                    isRenameFile: false,
+                  });
+                  setStandardPath(folder.path || "");
+                }}
+                deleteOnClick={() => handleDelete(folder.name, folder.path)}
+              />
+              {/* Share Button with Dropdown */}
+              <div className="relative">
+                <ShareDropDown
+                  file={{
+                    name: folder.name || "",
+                    path: folder.path || "",
+                    isFile: false,
+                  }}
+                  index={index}
+                  handleShare={handleShareFolder}
+                  copyToClipboard={copyToClipboard}
+                  setStandardPath={setStandardPath}
+                  setPasswordModalData={setPasswordModalData}
+                />
+              </div>
+            </div>
           )}
         </div>
       ))}
@@ -119,52 +155,39 @@ export const FoldersViews = ({ showActions }: { showActions: boolean }) => {
           {showActions && (
             <div key={file.path} className="flex items-center">
               {/* Action buttons with improved styling */}
-              <div className="flex bg-gray-50 p-1 rounded-lg mr-1 shadow-sm border border-gray-100">
-                {/* Download Button */}
-                <Button
-                  onClick={() => handleDownload(file.path)}
-                  className="p-1.5 mx-0.5 rounded-md text-gray-600 hover:bg-blue-500 hover:text-white transition-colors">
-                  <AiOutlineDownload className="text-lg" />
-                </Button>
-
-                {/* Copy Button */}
-                <Button
-                  className="p-1.5 mx-0.5 rounded-md text-gray-600 hover:bg-green-500 hover:text-white transition-colors"
-                  onClick={() => {
-                    setShowChooseDestinationModal(true);
-                    setStandardPath(file.path || "");
-                  }}>
-                  <MdOutlineFileCopy className="text-lg" />
-                </Button>
-
-                {/* Rename Button */}
-                <Button
-                  className="p-1.5 mx-0.5 rounded-md text-gray-600 hover:bg-amber-500 hover:text-white transition-colors"
-                  onClick={() => {
-                    setShowRenameModal(true);
-                    setStandardPath(file.path || "");
-                    setFileNameforRename(file.name || "");
-                  }}>
-                  <MdOutlineDriveFileRenameOutline className="text-lg" />
-                </Button>
-
-                {/* Delete Button */}
-                <Button
-                  onClick={() => handleDeleteFile(file.path || "")}
-                  className="p-1.5 mx-0.5 rounded-md text-gray-600 hover:bg-red-500 hover:text-white transition-colors">
-                  <MdOutlineDeleteOutline className="text-lg" />
-                </Button>
-              </div>
+              <Actions
+                isFolder={false}
+                downloadOnClick={() => {
+                  handleDownload(file.path);
+                }}
+                copyOnClick={() => {
+                  setShowChooseDestinationModal(true);
+                  setStandardPath(file.path || "");
+                }}
+                renameOnClick={() => {
+                  setShowRenameModal({
+                    isOpen: true,
+                    name: file.name || "",
+                    isRenameFile: true,
+                  });
+                  setStandardPath(file.path || "");
+                }}
+                deleteOnClick={() => handleDeleteFile(file.path || "")}
+              />
 
               {/* Share Button with Dropdown */}
               <div className="relative">
                 <ShareDropDown
-                  file={{ name: file.name || "", path: file.path || "" }}
+                  file={{
+                    name: file.name || "",
+                    path: file.path || "",
+                    isFile: true,
+                  }}
                   index={index}
                   handleShare={handleShare}
                   copyToClipboard={copyToClipboard}
                   setStandardPath={setStandardPath}
-                  setShowSetPasswordModal={setShowSetPasswordModal}
+                  setPasswordModalData={setPasswordModalData}
                 />
               </div>
             </div>
@@ -177,15 +200,14 @@ export const FoldersViews = ({ showActions }: { showActions: boolean }) => {
         standardPath={standardPath}
       />
       <RenameModal
-        isOpen={showRenameModal}
-        setIsOpen={setShowRenameModal}
+        renameModalData={showRenameModal}
+        setRenameModalData={setShowRenameModal}
         path={standardPath}
-        fileName={fileNameforRename}
       />
       <SetPasswordModal
         filePath={standardPath}
-        open={showSetPasswordModal}
-        setOpen={setShowSetPasswordModal}
+        passwordModalData={passwordModalData}
+        setPasswordModalData={setPasswordModalData}
       />
     </div>
   );

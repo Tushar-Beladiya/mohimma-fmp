@@ -3,38 +3,46 @@ import { CommonModal } from "../../../../common/components/Modal";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../../../Redux/store";
 import { renameFileAsync } from "../../../../Redux/fileThunk";
+import { renameFolderAsync } from "../../../../Redux/folderThunk";
 
 interface RenameModalProps {
-  isOpen: boolean;
-  setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  renameModalData: {
+    isOpen: boolean;
+    isRenameFile: boolean;
+    name: string;
+  };
+  setRenameModalData: React.Dispatch<
+    React.SetStateAction<{
+      isOpen: boolean;
+      isRenameFile: boolean;
+      name: string;
+    }>
+  >;
   path: string;
-  fileName: string;
 }
 
 const RenameModal: React.FC<RenameModalProps> = ({
-  isOpen,
-  setIsOpen,
+  renameModalData,
+  setRenameModalData,
   path,
-  fileName,
 }) => {
-  const [fileNameForInput, setFileNameForInput] = useState(fileName);
+  const { isOpen, isRenameFile, name } = renameModalData;
+  const [fileNameForInput, setFileNameForInput] = useState(name);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const dispatch = useDispatch<AppDispatch>();
 
   useEffect(() => {
     if (isOpen) {
-      //  remove after . value from the file name
-      const newFileName = fileName.replace(/\..*$/, "");
+      const newFileName = name.replace(/\..*$/, "");
       setFileNameForInput(newFileName);
-      setError(""); // Reset error when reopening
+      setError("");
     }
-  }, [isOpen, fileName]);
+  }, [isOpen, name]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
 
-    // Validate input: No dots (to prevent extensions)
     if (/\./.test(newValue)) {
       setError("File name cannot contain '.' or extensions.");
     } else {
@@ -44,11 +52,17 @@ const RenameModal: React.FC<RenameModalProps> = ({
   };
 
   const handleRename = async () => {
-    if (!fileNameForInput.trim() || fileNameForInput === fileName || error)
-      return;
+    if (!fileNameForInput.trim() || fileNameForInput === name || error) return;
     try {
-      await dispatch(renameFileAsync(path, fileNameForInput));
-      setIsOpen(false);
+      if (isRenameFile) {
+        await dispatch(renameFileAsync(path, fileNameForInput));
+        setRenameModalData({ isOpen: false, isRenameFile: false, name: "" });
+        setFileNameForInput("");
+      } else {
+        await dispatch(renameFolderAsync(path, fileNameForInput));
+        setRenameModalData({ isOpen: false, isRenameFile: false, name: "" });
+        setFileNameForInput("");
+      }
     } catch (error) {
       console.error("Rename failed:", error);
     }
@@ -56,9 +70,11 @@ const RenameModal: React.FC<RenameModalProps> = ({
 
   return (
     <CommonModal
-      title="Rename File"
+      title={isRenameFile ? "Rename File" : "Rename Folder"}
       open={isOpen}
-      onClose={() => setIsOpen(false)}
+      onClose={() =>
+        setRenameModalData({ isOpen: false, isRenameFile: false, name: "" })
+      }
       onConfirm={handleRename}>
       <input
         type="text"

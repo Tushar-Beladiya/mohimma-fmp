@@ -1,49 +1,53 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+
 import toast from "react-hot-toast";
 
-interface SharedFile {
+interface SharedFolder {
   name: string;
   url: string;
 }
 
-interface FileShareState {
+interface FolderShareState {
   isSharing: boolean;
   isShared: boolean;
-  shareUrl: string;
+  shareFolderUrl: string;
   error: string | null;
-  sharedFiles: { [key: string]: SharedFile };
+  sharedFolders: { [key: string]: SharedFolder };
 }
 
 // Initial state
-const initialState: FileShareState = {
+const initialState: FolderShareState = {
   isSharing: false,
   isShared: false,
-  shareUrl: "",
+  shareFolderUrl: "",
   error: null,
-  sharedFiles: {},
+  sharedFolders: {},
 };
 
-const fileShareSlice = createSlice({
-  name: "fileShare",
+const folderShareSlice = createSlice({
+  name: "folderShare",
   initialState,
   reducers: {
-    shareFileRequest: (state, action: PayloadAction<boolean>) => {
+    shareFolderRequest: (state, action: PayloadAction<boolean>) => {
       state.isSharing = action.payload;
       state.isShared = false;
       state.error = null;
       if (state.isSharing) {
-        toast.loading("Sharing ...");
+        toast.loading("Sharing folder...");
       } else {
         toast.dismiss();
       }
     },
-    shareFileSuccess: (state, action) => {
+    shareFolderSuccess: (state, action) => {
       state.isSharing = false;
       state.isShared = true;
-      state.shareUrl = action.payload;
+      state.shareFolderUrl = action.payload;
+
+      navigator.clipboard.writeText(action.payload);
+      toast.success("Link copied to clipboard!");
       state.error = null;
     },
-    shareFileFailure: (state, action) => {
+    shareFolderFailure: (state, action) => {
       state.isSharing = false;
       state.isShared = false;
       state.error = action.payload;
@@ -56,9 +60,9 @@ const fileShareSlice = createSlice({
 });
 
 export const {
-  shareFileRequest,
-  shareFileSuccess,
-  shareFileFailure,
+  shareFolderRequest,
+  shareFolderSuccess,
+  shareFolderFailure,
   copyToClipboard,
-} = fileShareSlice.actions;
-export const fileShareReducer = fileShareSlice.reducer;
+} = folderShareSlice.actions;
+export const folderShareReducer = folderShareSlice.reducer;

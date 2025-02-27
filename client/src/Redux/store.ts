@@ -3,12 +3,14 @@ import { folderReducer } from "./Folder";
 import { useDispatch, useSelector } from "react-redux";
 import { fileReducer } from "./files";
 import { fileShareReducer } from "./fileshare";
+import { folderShareReducer } from "./foldershare";
 
 const store = configureStore({
   reducer: {
     folders: folderReducer,
     file: fileReducer,
     fileShare: fileShareReducer,
+    folderShare: folderShareReducer,
   },
 });
 

@@ -3,8 +3,6 @@ interface LoaderProps {
   height: string;
 }
 const Loader: React.FC<LoaderProps> = ({ width, height }) => {
-  console.log("loader is visible");
-
   return (
     <div>
       <div role="status">

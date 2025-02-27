@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { act } from "react";
 import toast from "react-hot-toast";
-import { folderReducer, folderSlice } from "./Folder";
+import { folderSlice } from "./Folder";
 
 type FolderState = ReturnType<typeof folderSlice.getInitialState>;
 interface FileState {
@@ -27,7 +26,6 @@ const file = createSlice({
   initialState,
   reducers: {
     uploadFileStart: (state, action: PayloadAction<boolean>) => {
-      console.log("action.payload from file", action.payload);
       state.uploadFileLoading = action.payload;
       state.error = null;
       if (state.uploadFileLoading) {
@@ -40,8 +38,6 @@ const file = createSlice({
       state.uploadFileLoading = false;
       state.uploaded = true;
       state.files.push(action.payload.result);
-      console.log("action.payload.result", action);
-      // state.fileUploadPath = action.payload.result; // Assuming 'path' is a property of 'File'
     },
     uploadFileFailure: (state, action: PayloadAction<string>) => {
       state.uploadFileLoading = false;
@@ -50,7 +46,7 @@ const file = createSlice({
     downloadFileStart(state, action) {
       state.downloadFileLoading = action.payload;
       if (state.downloadFileLoading) {
-        toast.loading("Downloading file...");
+        toast.loading("Downloading ...");
       } else {
         toast.dismiss();
       }
@@ -69,7 +65,6 @@ const file = createSlice({
     },
     copyFile(state, action: PayloadAction<{ result: File }>) {
       state.files.push(action.payload.result);
-      console.log("copy file", state.files);
 
       toast.success(`File "${action.payload}" copied!`);
     },

@@ -1,5 +1,6 @@
 import { shareFileApi, shareFileAsPrivateApi } from "../api/fileshareapi";
 import {
+  copyToClipboard,
   shareFileFailure,
   shareFileRequest,
   shareFileSuccess,
@@ -14,7 +15,8 @@ export const shareFile =
 
       const response = await shareFileApi(filePath, publicAccess);
 
-      dispatch(shareFileSuccess(response.result)); // Assuming `result` contains the shared URL
+      dispatch(shareFileSuccess(response.result));
+      dispatch(copyToClipboard(response.result));
     } catch (error: any) {
       dispatch(shareFileFailure(error));
     } finally {
@@ -28,9 +30,9 @@ export const shareFileAsPrivate =
       dispatch(shareFileRequest(true));
 
       const response = await shareFileAsPrivateApi(filePath, password);
-      console.log("response from private", response);
 
-      dispatch(shareFileSuccess(response.result)); // Assuming `result` contains the shared URL
+      dispatch(shareFileSuccess(response.result));
+      dispatch(copyToClipboard(response.result));
     } catch (error: any) {
       dispatch(shareFileFailure(error));
     } finally {

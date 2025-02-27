@@ -76,14 +76,16 @@ export const getFilesAndFolders = async (folderPath: string, subFolderPath?: str
   }
 };
 
-export const renameFolder = async (folderPath: string, newFolderName: string): Promise<void> => {
+export const renameFolder = async (folderPath: string, newFolderName: string): Promise<string> => {
   try {
     // Get the folder to rename
     const folder = await client.getFolder(folderPath);
 
+    const newFolderPath = folderPath.replace(/[^/]+$/, newFolderName);
+
     // Rename the folder
-    await folder?.move(folderPath.replace(/[^/]+$/, newFolderName));
-    console.log(`Folder renamed successfully to: ${newFolderName}`);
+    await folder?.move(newFolderPath);
+    return newFolderPath;
   } catch (error) {
     throw new Error(error.message || 'Internal server error');
   }

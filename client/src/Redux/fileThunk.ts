@@ -35,10 +35,8 @@ export const uploadFileAsync =
         subFolderPath,
         fileName
       );
-      console.log("response", response);
 
       dispatch(uploadFileSuccess(response));
-      console.log("response", response);
     } catch (error: any) {
       dispatch(uploadFileFailure(error.message));
     } finally {
@@ -76,7 +74,6 @@ export const copyFileAsync =
     try {
       const response = await copyFileApi(sourcePath, destinationPath);
       dispatch(copyFile(response));
-      console.log("response from copy file", response);
     } catch (error: any) {
       console.error("Error copying file:", error.message);
     }
@@ -86,8 +83,8 @@ export const renameFileAsync =
   (filePath: string, newFileName: string) => async (dispatch: AppDispatch) => {
     try {
       const response = await renameFileApi(filePath, newFileName);
+
       dispatch(renameFile(response));
-      console.log("response from rename file", response);
     } catch (error: any) {
       console.error("Error renaming file:", error.message);
     }
