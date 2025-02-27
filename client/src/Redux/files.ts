@@ -61,12 +61,12 @@ const file = createSlice({
     },
     removeFile(state, action) {
       state.files = state.files.filter((file) => file.name !== action.payload);
-      toast.success(`File "${action.payload}" deleted!`);
+      toast.success(`File deleted!`);
     },
     copyFile(state, action: PayloadAction<{ result: File }>) {
       state.files.push(action.payload.result);
 
-      toast.success(`File "${action.payload}" copied!`);
+      toast.success(`File copied!`);
     },
     renameFile(state, action) {
       state.files = state.files.map((file) => {
@@ -75,7 +75,10 @@ const file = createSlice({
         }
         return file;
       });
-      toast.success(`File "${action.payload}" renamed!`);
+      toast.success(`File renamed!`);
+    },
+    previewFailure(state, action) {
+      state.error = action.payload;
     },
   },
 });
@@ -90,5 +93,6 @@ export const {
   removeFile,
   copyFile,
   renameFile,
+  previewFailure,
 } = file.actions;
 export const fileReducer = file.reducer;

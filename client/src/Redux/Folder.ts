@@ -66,7 +66,7 @@ export const folderSlice = createSlice({
       state.folders = state.folders.filter(
         (folder) => folder.name !== action.payload
       );
-      toast.success(`Folder "${action.payload}" removed!`);
+      toast.success(`Folder removed!`);
     },
     downloadFolderStart(state, action) {
       state.loading = action.payload;

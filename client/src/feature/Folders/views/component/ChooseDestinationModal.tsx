@@ -25,8 +25,8 @@ const ChooseDestinationModal: React.FC<ChooseDestinationModalProps> = ({
   if (!open) return null;
 
   const handleCopyFile = () => {
-    if (standardPath && folderPath) {
-      dispatch(copyFileAsync(standardPath, folderPath));
+    if (standardPath) {
+      dispatch(copyFileAsync(standardPath, folderPath ? folderPath : "/"));
     }
     setOpen(false);
   };
@@ -42,7 +42,8 @@ const ChooseDestinationModal: React.FC<ChooseDestinationModalProps> = ({
       <div
         className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 transition-colors"
         onMouseEnter={() => setHoveredFolder(folder)}
-        onMouseLeave={() => setHoveredFolder(null)}>
+        onMouseLeave={() => setHoveredFolder(null)}
+      >
         <div className="flex items-center space-x-3">
           <FiFolder
             className={`${isActive ? "text-blue-500" : "text-gray-400"}`}
@@ -51,7 +52,8 @@ const ChooseDestinationModal: React.FC<ChooseDestinationModalProps> = ({
           <span
             className={`${
               isActive ? "font-medium text-blue-700" : "text-gray-700"
-            }`}>
+            }`}
+          >
             {folder.split("/").pop()}
           </span>
         </div>
@@ -59,7 +61,8 @@ const ChooseDestinationModal: React.FC<ChooseDestinationModalProps> = ({
         {(isActive || hoveredFolder === folder) && (
           <button
             onClick={() => handleCopyFile()}
-            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm flex items-center space-x-1 transition-all shadow-sm">
+            className="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md text-sm flex items-center space-x-1 transition-all shadow-sm"
+          >
             <FiCopy size={14} />
             <span>Copy Here</span>
           </button>
@@ -71,10 +74,12 @@ const ChooseDestinationModal: React.FC<ChooseDestinationModalProps> = ({
   return (
     <div
       className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 backdrop-blur-sm z-50 transition-opacity"
-      onClick={() => setOpen(false)}>
+      onClick={() => setOpen(false)}
+    >
       <div
         className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[85vh] flex flex-col relative animate-fadeIn overflow-hidden"
-        onClick={(e) => e.stopPropagation()}>
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Modal Header */}
         <div className="sticky top-0 bg-white px-6 py-5 border-b border-gray-100 rounded-t-xl flex justify-between items-center z-10">
           <div className="flex items-center space-x-3">
@@ -89,7 +94,8 @@ const ChooseDestinationModal: React.FC<ChooseDestinationModalProps> = ({
           <button
             className="text-gray-500 hover:text-gray-700 hover:bg-gray-100 p-2 rounded-full transition-colors"
             onClick={() => setOpen(false)}
-            aria-label="Close modal">
+            aria-label="Close modal"
+          >
             <IoCloseSharp size={22} />
           </button>
         </div>

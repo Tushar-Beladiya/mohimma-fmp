@@ -8,11 +8,13 @@ import {
   removeFile,
   copyFile,
   renameFile,
+  previewFailure,
 } from "./files";
 import {
   copyFileApi,
   deleteFileApi,
   downloadFileApi,
+  filePreviewApi,
   renameFileApi,
   uploadFileApi,
 } from "../api/fileapi";
@@ -87,5 +89,15 @@ export const renameFileAsync =
       dispatch(renameFile(response));
     } catch (error: any) {
       console.error("Error renaming file:", error.message);
+    }
+  };
+
+export const FilePreviAsync =
+  (filePath: string) => async (dispatch: AppDispatch) => {
+    try {
+      const response = await filePreviewApi(`${filePath}`);
+      return response;
+    } catch (error: any) {
+      dispatch(previewFailure(error.message));
     }
   };

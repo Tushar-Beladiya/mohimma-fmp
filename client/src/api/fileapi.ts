@@ -126,28 +126,14 @@ export const renameFileApi = async (filePath: string, newFileName: string) => {
   }
 };
 
-//  visibility of file
-
-const client = createClient(
-  "http://localhost:8080/remote.php/dav/files/admin/",
-  {
-    username: "admin",
-    password: "123456789",
-    headers: {
-      Origin: "http://localhost:3000",
-    },
-  }
-);
-
-// Function to fetch directory contents
-export const fetchDirectoryContents = async (
-  path: string = "/"
-): Promise<FileStat[]> => {
+export const filePreviewApi = async (filePath: string) => {
   try {
-    const contents = await client.getDirectoryContents(path);
-    return contents as FileStat[];
-  } catch (error) {
-    console.error("Error fetching directory contents:", error);
-    return [];
+    const response = await axios.get(`${API_URL}/preview?filePath=${filePath}`);
+    return response.data;
+  } catch (error: any) {
+    throw new Error(
+      "Error previewing file: " +
+        (error.response?.data?.message || error.message)
+    );
   }
 };

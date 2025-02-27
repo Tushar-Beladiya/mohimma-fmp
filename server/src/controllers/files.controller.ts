@@ -154,3 +154,42 @@ export const renameFile = async (req: Request, res: Response): Promise<Response>
     });
   }
 };
+
+export const previewFile = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { filePath } = req.query;
+
+    if (!filePath || typeof filePath !== 'string') {
+      res.status(400).json({
+        success: false,
+        message: 'Missing or invalid filePath parameter.',
+      });
+    }
+
+    const client = new Client();
+
+    const file = await client.getFile(filePath as string);
+
+    if (!file) {
+      res.status(404).json({
+        success: false,
+        message: 'File not found on Nextcloud',
+      });
+    }
+
+    const fileBuffer = await filesService.downloadFile(file);
+
+    res.status(200).json({
+      success: true,
+      message: 'File preview successful',
+      result: fileBuffer,
+    });
+  } catch (error) {
+    console.error('❌ Error previewing file:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to preview file',
+      error: error.message,
+    });
+  }
+};
