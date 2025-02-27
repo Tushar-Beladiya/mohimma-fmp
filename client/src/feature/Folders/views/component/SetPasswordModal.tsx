@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CommonModal } from "../../../../common/components/Modal";
 import { AppDispatch } from "../../../../Redux/store";
 import { useDispatch } from "react-redux";
 import { shareFileAsPrivate } from "../../../../Redux/fileshareThunk";
 import { shareFolderAsPrivate } from "../../../../Redux/foldershareThunk";
+import { FiEye, FiEyeOff } from "react-icons/fi";
 
 interface SetPasswordModalProps {
   passwordModalData: {
@@ -31,6 +32,17 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
   const dispatch = useDispatch<AppDispatch>();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  useEffect(() => {
+    if (open) {
+      setPassword("");
+    }
+  }, [open]);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
 
   const bannedWords = ["abcd", "1234", "Xyz", "qwerty", "password"];
 
@@ -61,39 +73,52 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
         isOpen: false,
         isPasswordModalForFile: false,
       });
+      setPassword("");
     } else {
       dispatch(shareFolderAsPrivate(filePath, password));
       setOpen({
         isOpen: false,
         isPasswordModalForFile: false,
       });
+      setPassword("");
     }
   };
 
   return (
     <div>
       <CommonModal
-        title="Set Password to share file as a private"
+        title="Set Password for Private Sharing"
         open={open}
         onClose={() => {
           setOpen({
             isOpen: false,
             isPasswordModalForFile: false,
           });
+          setPassword("");
         }}
-        onConfirm={HandleShareFileAsPrivate}>
-        <div>
+        onConfirm={HandleShareFileAsPrivate}
+      >
+        <div className="relative">
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             placeholder="Enter Password"
-            className="border border-gray-300 p-2 rounded-md w-full"
+            className="border border-gray-300 p-2 rounded-md w-full pr-10"
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
               validatePassword(e.target.value);
             }}
           />
-          {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+            <button
+              type="button"
+              className="text-gray-500 hover:text-gray-700 focus:outline-none"
+              onClick={togglePasswordVisibility}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+            >
+              {!showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
+            </button>
+          </div>
         </div>
       </CommonModal>
     </div>

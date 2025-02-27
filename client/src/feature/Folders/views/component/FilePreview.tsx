@@ -52,11 +52,13 @@ export const FilePreview = ({
     // Image Preview
     if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext)) {
       return (
-        <img
-          src={previewUrl}
-          alt={previewFile.name}
-          className="max-w-full max-h-full object-contain"
-        />
+        <div className="flex items-center justify-center h-full">
+          <img
+            src={previewUrl}
+            alt={previewFile.name}
+            className="max-w-full max-h-full object-contain"
+          />
+        </div>
       );
     }
 
@@ -95,7 +97,7 @@ export const FilePreview = ({
         title={previewFile?.name || ""}
         open={previewFile}
         onClose={closePreview}
-        onConfirm={closePreview}
+        width="w-1/2"
       >
         {renderPreview()}
       </CommonModal>
