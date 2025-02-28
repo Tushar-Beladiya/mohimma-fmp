@@ -3,7 +3,7 @@ import { UploadRequestBody } from 'src/types/files.types';
 import { Readable } from 'stream';
 const client = new Client();
 
-export const uploadFile = async (body: UploadRequestBody, file: Express.Multer.File): Promise<string> => {
+export const uploadFile = async (body: UploadRequestBody, file: Express.Multer.File): Promise<{}> => {
   try {
     // Extract folder path from request body
     const { folderName, subFolderPath, fileName } = body;
@@ -29,7 +29,7 @@ export const uploadFile = async (body: UploadRequestBody, file: Express.Multer.F
         if (newFolder) await newFolder.createFile(actualFileName, fileStream);
       }
 
-      return `${remoteFolder}/${actualFileName}`;
+      return { path: `${remoteFolder}/${actualFileName}`, name: actualFileName };
     }
 
     // Case 2: Only folderName is provided
@@ -47,7 +47,7 @@ export const uploadFile = async (body: UploadRequestBody, file: Express.Multer.F
         if (newFolder) await newFolder.createFile(actualFileName, fileStream);
       }
 
-      return `${remoteFolder}/${actualFileName}`;
+      return { path: `${remoteFolder}/${actualFileName}`, name: actualFileName };
     }
 
     // Case 3: No folder specified, upload to home directory
@@ -55,7 +55,7 @@ export const uploadFile = async (body: UploadRequestBody, file: Express.Multer.F
       const homeFolder = await client.getFolder('/');
       if (homeFolder) await homeFolder.createFile(actualFileName, fileStream);
 
-      return `/${actualFileName}`;
+      return { path: `/${actualFileName}`, name: actualFileName };
     }
   } catch (error) {
     console.error(error);
@@ -90,7 +90,7 @@ export const deleteFile = async (filePath: string): Promise<string> => {
   return '';
 };
 
-export const copyFile = async (sourcePath: string, destinationPath: string): Promise<string> => {
+export const copyFile = async (sourcePath: string, destinationPath: string): Promise<{}> => {
   try {
     const sourceFile = await client.getFile(sourcePath);
     const destinationFolder = await client.getFolder(destinationPath);
@@ -120,7 +120,7 @@ export const copyFile = async (sourcePath: string, destinationPath: string): Pro
       // Create the duplicate file with the unique name
       await destinationFolder.createFile(newFileName, content);
 
-      return `${destinationPath}${newFileName}`;
+      return { path: `/${destinationPath}/${newFileName}`, name: newFileName };
     }
   } catch (error) {
     console.error(error);
@@ -129,7 +129,7 @@ export const copyFile = async (sourcePath: string, destinationPath: string): Pro
   return '';
 };
 
-export const renameFile = async (filePath: string, newFileName: string): Promise<string> => {
+export const renameFile = async (filePath: string, newFileName: string): Promise<{}> => {
   try {
     const file = await client.getFile(filePath);
     if (file) {
@@ -143,7 +143,7 @@ export const renameFile = async (filePath: string, newFileName: string): Promise
       // Move the file with its extension
       await file.move(newFilePath);
 
-      return newFilePath;
+      return { path: newFilePath, newFileName: `${newFileName}${extension}` };
     }
   } catch (error) {
     console.error('Rename failed:', error);

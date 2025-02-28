@@ -1,33 +1,24 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import toast from "react-hot-toast";
 
-// Define the types for files and folders
-interface File {
-  name?: string;
-  path?: string;
-}
+// Define the types for folders
 
 interface Folder {
   name: string;
   path?: string;
   contents: any;
-  files?: File[];
 }
 
 interface FolderState {
   folders: Folder[];
-  files: File[];
   loading: boolean;
   error: string | null;
-  folderRename: boolean;
 }
 
 const initialState: FolderState = {
   folders: [],
-  files: [],
   loading: false,
   error: null,
-  folderRename: false,
 };
 
 export const folderSlice = createSlice({
@@ -48,11 +39,7 @@ export const folderSlice = createSlice({
         toast.error(action.payload);
       }
     },
-    setFolders: (
-      state,
-      action: PayloadAction<{ files: File[]; folders: Folder[] }>
-    ) => {
-      state.files = action.payload.files;
+    setFolders: (state, action: PayloadAction<{ folders: Folder[] }>) => {
       state.folders = action.payload.folders;
     },
     addFolder: (
@@ -71,7 +58,7 @@ export const folderSlice = createSlice({
     downloadFolderStart(state, action) {
       state.loading = action.payload;
       if (state.loading) {
-        toast.loading("Downloading file...");
+        toast.loading("Downloading folder...");
       } else {
         toast.dismiss();
       }
@@ -84,9 +71,13 @@ export const folderSlice = createSlice({
       state.loading = false;
       state.error = action.payload;
     },
-    renameFolder(state) {
+    renameFolder(state, action) {
       state.loading = false;
-      state.folderRename = true;
+      const idx = state.folders.findIndex(
+        (folder) => folder.name === action.payload.result.oldFolderName
+      );
+      state.folders[idx].name = action.payload.result.newFolderName;
+      state.folders[idx].path = action.payload.result.path;
       toast.success(`Folder renamed !`);
     },
   },

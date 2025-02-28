@@ -12,12 +12,12 @@ export const uploadFile = async (req: Request, res: Response): Promise<Response>
       });
     }
 
-    const path = await filesService.uploadFile(req.body, file);
+    const fileData = await filesService.uploadFile(req.body, file);
 
     return res.status(201).json({
       success: true,
       message: `File uploaded successfully`,
-      result: path,
+      result: fileData,
     });
   } catch (error) {
     console.error('❌ Error uploading file:', error);
@@ -139,12 +139,12 @@ export const renameFile = async (req: Request, res: Response): Promise<Response>
       });
     }
 
-    const path = await filesService.renameFile(filePath, newFileName);
-
+    const fileData = await filesService.renameFile(filePath, newFileName);
+    console.log('fileData', fileData);
     return res.status(200).json({
       success: true,
       message: `File renamed successfully`,
-      result: path,
+      result: { ...fileData, oldFileName: filePath.split('/').pop() },
     });
   } catch (error) {
     console.error('❌ Error renaming file:', error);

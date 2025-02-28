@@ -1,16 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { useDispatch, useSelector } from "react-redux";
-import { getFoldersAsync } from "../Redux/folderThunk";
-import { AppDispatch, RootState } from "../Redux/store";
+import React, { useEffect } from "react";
+import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
 import { useFolder } from "../context/FolderContext";
+import { getFoldersAsync } from "../Redux/folderThunk";
+import { AppDispatch } from "../Redux/store";
 
 const Breadcrumb: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { folderPath, setFolderPath } = useFolder();
-  // const { uploadFileLoading } = useSelector((state: RootState) => state.file);
-  const { files } = useSelector((state: RootState) => state.file);
-  const { folderRename } = useSelector((state: RootState) => state.folders);
   const parts = folderPath.split("/").filter(Boolean);
 
   useEffect(() => {
@@ -23,7 +20,7 @@ const Breadcrumb: React.FC = () => {
       );
     };
     fetchData();
-  }, [folderPath, dispatch, setFolderPath, files, folderRename]);
+  }, [folderPath, dispatch, setFolderPath]);
 
   const handleClick = (index: number) => {
     const subFolderPath = parts.slice(0, index + 1).join("/");
@@ -43,7 +40,8 @@ const Breadcrumb: React.FC = () => {
           <li key={index} className="inline cursor-pointer">
             <span
               onClick={() => handleClick(index)}
-              className="hover:underline text-blue-500">
+              className="hover:underline text-blue-500"
+            >
               {part}
             </span>
             {index !== parts.length - 1 && <span> / </span>}

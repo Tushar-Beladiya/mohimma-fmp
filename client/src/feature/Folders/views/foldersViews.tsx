@@ -1,4 +1,3 @@
-import axios from "axios";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import {
@@ -70,11 +69,13 @@ export const FoldersViews: React.FC<FoldersViewsProps> = ({ showActions }) => {
   const dispatch = useDispatch<AppDispatch>();
 
   // Redux state
+
   const folders = useSelector(
     (state: RootState) => state.folders.folders
   ) as FolderData[];
+
   const files = useSelector(
-    (state: RootState) => state.folders.files
+    (state: RootState) => state.file.files
   ) as FileData[];
 
   const { error } = useSelector((state: RootState) => state.file);

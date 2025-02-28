@@ -95,7 +95,7 @@ export const renameFolder = async (req: Request, res: Response): Promise<Respons
     return res.status(200).json({
       success: true,
       message: `${folderPath} folder renamed to ${newFolderName} successfully`,
-      result: path,
+      result: { path, newFolderName, oldFolderName: folderPath.split('/').pop() },
     });
   } catch (error) {
     console.error('❌ Error renaming folder:', error);

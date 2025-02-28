@@ -1,15 +1,18 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import toast from "react-hot-toast";
-import { folderSlice } from "./Folder";
 
-type FolderState = ReturnType<typeof folderSlice.getInitialState>;
+// type FolderState = ReturnType<typeof folderSlice.getInitialState>;
+interface File {
+  name?: string;
+  path?: string;
+}
 interface FileState {
   uploadFileLoading: boolean;
   downloadFileLoading: {};
   uploaded: boolean;
   fileUploadPath: string;
   error: string | null;
-  files: FolderState["files"];
+  files: File[];
 }
 
 const initialState: FileState = {
@@ -18,13 +21,16 @@ const initialState: FileState = {
   uploaded: false,
   fileUploadPath: "",
   error: null,
-  files: folderSlice.getInitialState().files,
+  files: [],
 };
 
 const file = createSlice({
   name: "files",
   initialState,
   reducers: {
+    setFiles: (state, action) => {
+      state.files = action.payload;
+    },
     uploadFileStart: (state, action: PayloadAction<boolean>) => {
       state.uploadFileLoading = action.payload;
       state.error = null;
@@ -36,8 +42,15 @@ const file = createSlice({
     },
     uploadFileSuccess: (state, action: PayloadAction<{ result: File }>) => {
       state.uploadFileLoading = false;
-      state.uploaded = true;
-      state.files.push(action.payload.result);
+      console.log(
+        "files before upload",
+        state.files,
+        "sdsfsdf",
+        action.payload.result
+      );
+
+      state.files = [...state.files, { ...action.payload.result }];
+      console.log("files after upload", state.files);
     },
     uploadFileFailure: (state, action: PayloadAction<string>) => {
       state.uploadFileLoading = false;
@@ -60,22 +73,20 @@ const file = createSlice({
       state.error = action.payload;
     },
     removeFile(state, action) {
-      state.files = state.files.filter((file) => file.name !== action.payload);
+      state.files = state.files.filter((file) => file.path !== action.payload);
       toast.success(`File deleted!`);
     },
     copyFile(state, action: PayloadAction<{ result: File }>) {
       state.files.push(action.payload.result);
-
       toast.success(`File copied!`);
     },
     renameFile(state, action) {
-      state.files = state.files.map((file) => {
-        if (file.name === action.payload.oldName) {
-          file.name = action.payload.newName;
-        }
-        return file;
-      });
-      toast.success(`File renamed!`);
+      debugger;
+      const idx = state.files.findIndex(
+        (folder) => folder.name === action.payload.result.oldFileName
+      );
+      state.files[idx].name = action.payload.result.newFileName;
+      state.files[idx].path = action.payload.result.path;
     },
     previewFailure(state, action) {
       state.error = action.payload;
@@ -94,5 +105,6 @@ export const {
   copyFile,
   renameFile,
   previewFailure,
+  setFiles,
 } = file.actions;
 export const fileReducer = file.reducer;

@@ -6,21 +6,20 @@ import {
   renameFolderApi,
 } from "../api/folderapi";
 
-import { AppDispatch } from "./store";
+import { saveAs } from "file-saver";
+import JSZip from "jszip";
+import { downloadFileFailure, setFiles } from "./files";
 import {
-  setLoading,
-  setError,
-  setFolders,
   addFolder,
-  removeFolder,
   downloadFolderStart,
   downloadFolderSuccess,
+  removeFolder,
   renameFolder,
+  setError,
+  setFolders,
+  setLoading,
 } from "./Folder";
-import JSZip from "jszip";
-import { saveAs } from "file-saver";
-import { downloadFileFailure } from "./files";
-import { useFolder } from "../context/FolderContext";
+import { AppDispatch } from "./store";
 
 export const getFoldersAsync =
   ({ name, subFolderPath }: { name?: string; subFolderPath?: string } = {}) =>
@@ -32,7 +31,8 @@ export const getFoldersAsync =
 
       if (response && response.result && response.result.contents) {
         const { files, folders } = response.result.contents;
-        dispatch(setFolders({ files, folders }));
+        dispatch(setFolders({ folders }));
+        dispatch(setFiles(files));
       } else {
         throw new Error("Invalid response structure");
       }

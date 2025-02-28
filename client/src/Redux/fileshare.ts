@@ -49,6 +49,7 @@ const fileShareSlice = createSlice({
       state.error = action.payload;
     },
     copyToClipboard: (state, action) => {
+      console.log("action.payload", action.payload);
       navigator.clipboard.writeText(action.payload);
       toast.success("Link copied to clipboard!");
     },
