@@ -17,6 +17,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+app.get('/', (_req, res) => res.send(`INDEX!!,`));
 // Routes
 app.use('/api', router);
 
@@ -24,7 +25,6 @@ const port = process.env.PORT || '8000';
 app.set('port', port);
 
 const server = http.createServer(app);
-
 server.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
