@@ -5,14 +5,14 @@ const client = new Client();
 export const shareFolderAsPublic = async (folderPath: string): Promise<string> => {
   try {
     // Ensure the file exists
-    const file = await client.getFolder(folderPath);
-    if (!file) {
-      throw new Error('File not found on Nextcloud');
+    const folder = await client.getFolder(folderPath);
+    if (!folder) {
+      throw new Error('Folder not found on Nextcloud');
     }
 
     // Create share options
     let shareOptions: ICreateShare = {
-      fileSystemElement: file,
+      fileSystemElement: folder,
       publicUpload: true, // true for public, false for private
     };
 
