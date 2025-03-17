@@ -6,5 +6,7 @@ const router = Router();
 
 //get files and folder
 router.get('/', inviteUserController.checkUserExists);
+router.get('/user', inviteUserController.getInviteUserFolders);
+// router.delete('/', inviteUserController.deleteShareUser);
 
 export default router;
