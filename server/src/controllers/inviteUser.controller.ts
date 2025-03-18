@@ -1,11 +1,10 @@
 import { Request, Response } from 'express';
 import { inviteUserService } from '../services';
 
-export const checkUserExists = async (req: Request, res: Response): Promise<void> => {
+export const inviteUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { username } = req.query;
-    const { folderPath } = req.body;
-    if (!username || typeof username !== 'string') {
+    const { username, folderPath } = req.query;
+    if (!username) {
       res.status(400).json({
         success: false,
         message: 'Missing or invalid username parameter.',
@@ -13,7 +12,7 @@ export const checkUserExists = async (req: Request, res: Response): Promise<void
       return;
     }
 
-    const response = await inviteUserService.shareFolder(folderPath, username);
+    const response = await inviteUserService.InviteUser(folderPath as string, username as string);
     if (response) {
       res.status(200).json({
         success: response.success,
@@ -22,72 +21,144 @@ export const checkUserExists = async (req: Request, res: Response): Promise<void
       });
     }
   } catch (error) {
-    console.error('❌ Error checking user:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to check user',
-      error: error.message,
+      message: error.message,
     });
   }
 };
 
-export const getInviteUserFolders = async (req: Request, res: Response): Promise<void> => {
+export const getSharedData = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { username } = req.query;
+    const { username, path } = req.query;
 
-    if (!username || typeof username !== 'string') {
-      res.status(400).json({
-        success: false,
-        message: 'Missing or invalid username parameter.',
-      });
-      return;
-    }
-    const folders = await inviteUserService.getItemsSharedWithUser(username);
-    if (folders) {
+    // Fetch shared folders based on available parameters
+    const response = await inviteUserService.getSharedData(username as string, path as string);
+    if (response.success) {
       res.status(200).json({
         success: true,
         message: 'User folders fetched successfully',
-        result: folders,
+        result: response.result,
       });
     } else {
-      res.status(200).json({
-        success: true,
-        message: 'No folders shared with user',
-        result: [],
+      res.status(404).json({
+        success: false,
+        message: 'No shared folders found',
       });
     }
   } catch (error) {
-    console.error('❌ Error fetching user folders:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch user folders',
-      error: error.message,
+      message: error.message,
     });
   }
 };
 
-// export const deleteShareUser = async (req: Request, res: Response): Promise<void> => {
-//   try {
-//     const { userId } = req.query;
-//     if (!userId) {
-//       res.status(400).json({
-//         success: false,
-//         message: 'Missing or invalid folderPath or username parameter.',
-//       });
-//       return;
-//     }
-//     const response = await inviteUserService.deleteShareInviteUser(userId as string);
-//     res.status(200).json({
-//       success: response.success,
-//       message: response.message,
-//       result: response.result,
-//     });
-//   } catch (error) {
-//     console.error('❌ Error deleting share user:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: 'Failed to delete share user',
-//       error: error.message,
-//     });
-//   }
-// };
+export const deleteShareUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { shareId } = req.query;
+    const { shareWith } = req.body;
+    // Validate userId
+    if (!shareId) {
+      res.status(400).json({
+        success: false,
+        message: 'Missing or invalid userId parameter.',
+      });
+    }
+
+    // Call service function to delete the share
+    const response = await inviteUserService.deleteShareItem(shareId as string, shareWith);
+
+    if (response.success) {
+      res.status(200).json({
+        success: true,
+        message: 'Share deleted successfully',
+        result: response.result,
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: response.message || 'Share not found or could not be deleted',
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+export const updateShareUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { shareId, permission } = req.body;
+
+    // Validate input
+    if (!shareId) {
+      res.status(400).json({
+        success: false,
+        message: 'Missing or invalid shareId parameter.',
+      });
+      return;
+    }
+
+    // Call service function to update the share
+    const response = await inviteUserService.updateShareInviteUser(shareId, permission);
+
+    if (response.success) {
+      res.status(200).json({
+        success: true,
+        message: 'Share updated successfully',
+        result: response.result,
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: response.message || 'Share not found or could not be updated',
+      });
+    }
+  } catch (error) {
+    console.error('❌ Error updating share user:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Internal Server Error: Failed to update share user',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    });
+  }
+};
+
+export const deleteUser = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { userId } = req.query;
+
+    // Validate userId
+    if (!userId) {
+      res.status(400).json({
+        success: false,
+        message: 'Missing or invalid userId parameter.',
+      });
+    }
+
+    // Call service function to delete the share
+    const response = await inviteUserService.deleteUser(userId as string);
+
+    if (response.success) {
+      res.status(200).json({
+        success: true,
+        message: 'User deleted successfully',
+        result: response.result,
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        message: response.message || 'User not found or could not be deleted',
+      });
+    }
+  } catch (error) {
+    console.error('❌ Error deleting share user:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

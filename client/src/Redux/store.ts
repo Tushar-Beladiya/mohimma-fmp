@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fileReducer } from "./files";
 import { fileShareReducer } from "./fileshare";
 import { folderShareReducer } from "./foldershare";
+import { inviteUserReducer } from "./InviteUser/inviteUser";
 
 const store = configureStore({
   reducer: {
@@ -11,6 +12,7 @@ const store = configureStore({
     file: fileReducer,
     fileShare: fileShareReducer,
     folderShare: folderShareReducer,
+    inviteUser: inviteUserReducer,
   },
 });
 

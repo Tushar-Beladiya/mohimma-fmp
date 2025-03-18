@@ -4,6 +4,8 @@ import { Link } from "react-router-dom";
 import { useFolder } from "../context/FolderContext";
 import { getFoldersAsync } from "../Redux/folderThunk";
 import { AppDispatch } from "../Redux/store";
+import Button from "./Button";
+import { IoPeople } from "react-icons/io5";
 
 const Breadcrumb: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -28,26 +30,35 @@ const Breadcrumb: React.FC = () => {
   };
 
   return (
-    <nav aria-label="breadcrumb">
-      <ul className="flex space-x-2 text-blue-600 font-medium">
-        <li className="inline cursor-pointer" onClick={() => setFolderPath("")}>
-          <Link to="/folder" className="hover:underline">
-            All Files
-          </Link>
-          {parts.length > 0 && <span> / </span>}
-        </li>
-        {parts.map((part, index) => (
-          <li key={index} className="inline cursor-pointer">
-            <span
-              onClick={() => handleClick(index)}
-              className="hover:underline text-blue-500"
-            >
-              {part}
-            </span>
-            {index !== parts.length - 1 && <span> / </span>}
+    <nav aria-label="breadcrumb" className="w-full">
+      <div className="flex items-center justify-between">
+        <ul className="flex space-x-2 text-blue-600 font-medium">
+          <li
+            className="inline cursor-pointer"
+            onClick={() => setFolderPath("")}>
+            <Link to="/folder" className="hover:underline">
+              All Files
+            </Link>
+            {parts.length > 0 && <span> / </span>}
           </li>
-        ))}
-      </ul>
+          {parts.map((part, index) => (
+            <li key={index} className="inline cursor-pointer">
+              <span
+                onClick={() => handleClick(index)}
+                className="hover:underline text-blue-500">
+                {part}
+              </span>
+              {index !== parts.length - 1 && <span> / </span>}
+            </li>
+          ))}
+        </ul>
+        {/* <Button
+          onClick={() => console.log("People")}
+          className="bg-blue-500 text-white hover:bg-blue-600">
+          <IoPeople />
+          People
+        </Button> */}
+      </div>
     </nav>
   );
 };
