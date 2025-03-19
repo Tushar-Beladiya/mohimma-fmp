@@ -1,8 +1,12 @@
-import { IoIosInformationCircle, IoMdSettings } from "react-icons/io";
-import { IoFolderOutline } from "react-icons/io5";
-import { useState } from "react";
+import { IoMdSettings } from "react-icons/io";
+import { IoFolderOutline, IoPeople } from "react-icons/io5";
+import { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import CreateDropDown from "../../../feature/Folders/views/component/CreateDropDown";
+import { getAllUsersAsync, getSharedDataAsync } from "../../../Redux/thunk";
+import { useDispatch, useSelector } from "react-redux";
+import { AppDispatch, RootState } from "../../../Redux/store";
+import { useFolder } from "../../../context/FolderContext";
 
 interface TopbarProps {
   name: string;
@@ -11,11 +15,28 @@ interface TopbarProps {
 
 export const Topbar: React.FC<TopbarProps> = ({ name, children }) => {
   const [dropdown, setDropdown] = useState(false);
-  const [contextMenuPosition, setContextMenuPosition] = useState<{
+  const [contextMenuPosition] = useState<{
     x: number;
     y: number;
   } | null>(null);
-
+  const dispatch = useDispatch<AppDispatch>();
+  const { users } = useSelector((state: RootState) => state.inviteUser);
+  const [open, setOpen] = useState(false);
+  const { setUsersData } = useFolder();
+  useEffect(() => {
+    if (open) {
+      getUsers();
+    }
+  }, [open]);
+  const getUsers = () => {
+    dispatch(getAllUsersAsync());
+  };
+  const handleGetUserData = (username: string) => {
+    if (username) {
+      dispatch(getSharedDataAsync(username));
+      setUsersData(true);
+    }
+  };
   return (
     <div className="w-10/12 h-screen">
       <nav className="flex justify-between top-0 p-2">
@@ -44,8 +65,36 @@ export const Topbar: React.FC<TopbarProps> = ({ name, children }) => {
             type="text"
             placeholder="Search"
           />
+          <div className="relative group">
+            <button
+              onClick={() => {
+                setOpen(!open);
+              }}>
+              <IoPeople className="text-2xl text-grey-400" />
+            </button>
+            {open && users.length > 0 && (
+              <div
+                // className="absolute bottom-0 right-0 w-48 bg-white rounded-lg shadow-lg p-4 z-10"
+                className="absolute mt-2 w-auto right-0 rounded-md bg-white ring-1 shadow-lg ring-black/5 focus:outline-hidden z-10">
+                {users.map((user, index) => (
+                  <div
+                    key={index}
+                    className="w-full text-sm hover:bg-gray-100 p-2 text-left flex items-center gap-2 text-small">
+                    <div className="font-medium">
+                      <button
+                        onClick={() => {
+                          handleGetUserData(user);
+                          setOpen(false);
+                        }}>
+                        {user}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
           <IoMdSettings className="text-2xl text-grey-400" />
-          <IoIosInformationCircle className="text-2xl text-grey-400" />
         </div>
       </nav>
       <main className="h-[800px] overflow-y-scroll m-4 bg-white rounded-xl">

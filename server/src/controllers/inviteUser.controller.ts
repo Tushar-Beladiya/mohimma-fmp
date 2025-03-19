@@ -54,6 +54,22 @@ export const getSharedData = async (req: Request, res: Response): Promise<void> 
   }
 };
 
+export const getUsers = async (_req: Request, res: Response): Promise<void> => {
+  const response = await inviteUserService.getUsers();
+  if (response.success) {
+    res.status(200).json({
+      success: true,
+      message: 'Users fetched successfully',
+      result: response.result,
+    });
+  } else {
+    res.status(404).json({
+      success: false,
+      message: 'No users found',
+    });
+  }
+};
+
 export const deleteShareUser = async (req: Request, res: Response): Promise<void> => {
   try {
     const { shareId } = req.query;

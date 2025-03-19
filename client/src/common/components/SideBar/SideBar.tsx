@@ -10,11 +10,12 @@ interface SideBarProps {
 
 export const SideBar: React.FC<SideBarProps> = ({ children }) => {
   const [activeTab, setActiveTab] = useState("All Files");
-  const { setFolderPath } = useFolder();
+  const { setFolderPath, setUsersData } = useFolder();
   const handleTabClick = (tabName: string) => {
     setActiveTab(tabName);
     if (tabName === "All Files") {
       setFolderPath("");
+      setUsersData(false);
     }
   };
 

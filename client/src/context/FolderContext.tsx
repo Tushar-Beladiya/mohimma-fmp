@@ -4,6 +4,8 @@ import React, { createContext, useState, useContext, ReactNode } from "react";
 interface FolderContextType {
   folderPath: string;
   setFolderPath: (path: string) => void;
+  usersData: boolean;
+  setUsersData: (value: boolean) => void;
 }
 
 // Create the context with default undefined (will be provided by provider)
@@ -17,9 +19,11 @@ interface FolderProviderProps {
 // Context Provider Component
 export const FolderProvider: React.FC<FolderProviderProps> = ({ children }) => {
   const [folderPath, setFolderPath] = useState<string>("");
+  const [usersData, setUsersData] = useState<boolean>(false);
 
   return (
-    <FolderContext.Provider value={{ folderPath, setFolderPath }}>
+    <FolderContext.Provider
+      value={{ folderPath, setFolderPath, setUsersData, usersData }}>
       {children}
     </FolderContext.Provider>
   );

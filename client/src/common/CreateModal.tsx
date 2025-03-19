@@ -1,4 +1,4 @@
-import { ChangeEvent, useState } from "react";
+import { useState } from "react";
 import { IoCloseSharp } from "react-icons/io5";
 
 interface CreateModalProps {

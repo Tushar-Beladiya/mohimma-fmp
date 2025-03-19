@@ -22,7 +22,7 @@ const CreateDropDown: React.FC<DropDownProps> = ({
   contextMenuPosition,
 }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { folderPath, setFolderPath } = useFolder();
+  const { folderPath } = useFolder();
   const [isModalOpen, setModalOpen] = useState(false);
   const [modalType, setModalType] = useState("");
 
@@ -55,7 +55,10 @@ const CreateDropDown: React.FC<DropDownProps> = ({
 
   return (
     <>
-      <DropDown contextMenuPosition={contextMenuPosition} dropdown={dropdown}>
+      <DropDown
+        contextMenuPosition={contextMenuPosition}
+        dropdown={dropdown}
+        setDropdown={setDropdown}>
         <div className="py-1 rounded" role="none">
           <button
             className="block px-4 py-2 text-sm text-gray-700"

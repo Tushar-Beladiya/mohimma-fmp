@@ -42,6 +42,15 @@ export const getSharedData = async (username?: string, path?: string) => {
   }
 };
 
+export const getUsers = async () => {
+  try {
+    const users = await client.users.list();
+    return { success: true, result: users };
+  } catch (error) {
+    return { success: false };
+  }
+};
+
 export const deleteShareItem = async (shareId: string, shareWith: string) => {
   try {
     await client.shares.delete(shareId);

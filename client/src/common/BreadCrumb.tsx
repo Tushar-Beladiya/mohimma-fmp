@@ -4,12 +4,10 @@ import { Link } from "react-router-dom";
 import { useFolder } from "../context/FolderContext";
 import { getFoldersAsync } from "../Redux/folderThunk";
 import { AppDispatch } from "../Redux/store";
-import Button from "./Button";
-import { IoPeople } from "react-icons/io5";
 
 const Breadcrumb: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { folderPath, setFolderPath } = useFolder();
+  const { folderPath, setFolderPath, setUsersData } = useFolder();
   const parts = folderPath.split("/").filter(Boolean);
 
   useEffect(() => {
@@ -35,7 +33,10 @@ const Breadcrumb: React.FC = () => {
         <ul className="flex space-x-2 text-blue-600 font-medium">
           <li
             className="inline cursor-pointer"
-            onClick={() => setFolderPath("")}>
+            onClick={() => {
+              setFolderPath("");
+              setUsersData(false);
+            }}>
             <Link to="/folder" className="hover:underline">
               All Files
             </Link>
@@ -52,12 +53,6 @@ const Breadcrumb: React.FC = () => {
             </li>
           ))}
         </ul>
-        {/* <Button
-          onClick={() => console.log("People")}
-          className="bg-blue-500 text-white hover:bg-blue-600">
-          <IoPeople />
-          People
-        </Button> */}
       </div>
     </nav>
   );

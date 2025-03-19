@@ -29,6 +29,7 @@ const ShareDropDown: React.FC<ShareDropDownProps> = ({
 }) => {
   const [openDropdown, setOpenDropdown] = useState<number | null>(null);
   const [openShareModal, setOpenShareModal] = useState(false);
+  const [shareFolderPath, setShareFolderPath] = useState("");
   return (
     <div className="relative">
       <Button
@@ -38,11 +39,13 @@ const ShareDropDown: React.FC<ShareDropDownProps> = ({
       </Button>
       <DropDown
         dropdown={openDropdown === index}
-        contextMenuPosition={{ x: -150, y: 30 }}>
+        contextMenuPosition={{ x: -150, y: 30 }}
+        setDropdown={() => setOpenDropdown(null)}>
         <div className="w-48 p-4">
           <button
             onClick={() => {
               setOpenShareModal(true);
+              setShareFolderPath(file.path);
               setOpenDropdown(null);
             }}
             className="w-full text-sm hover:bg-gray-100 p-2 text-left flex items-center gap-2">
@@ -85,7 +88,7 @@ const ShareDropDown: React.FC<ShareDropDownProps> = ({
         open={openShareModal}
         setOpen={setOpenShareModal}
         fileName={file.name}
-        path={file.path}
+        path={shareFolderPath}
       />
     </div>
   );

@@ -1,5 +1,17 @@
-import { getSharedData, shareWithUser } from "./inviteUser";
-import { getSharedDataApi, shareWithUserApi } from "../../api/inviteuserapi";
+import {
+  deleteShareData,
+  editSharePermissions,
+  getAllUsers,
+  getSharedData,
+  shareWithUser,
+} from "./inviteUser";
+import {
+  deleteSharedDataApi,
+  editSharePermissionApi,
+  getAllUsersApi,
+  getSharedDataApi,
+  shareWithUserApi,
+} from "../../api/inviteuserapi";
 import { AppDispatch } from "../store";
 
 export const inviteUserAsync =
@@ -10,7 +22,7 @@ export const inviteUserAsync =
 
       const response = await shareWithUserApi(data.username, data.folderPath);
       dispatch(shareWithUser(response));
-      console.log("response of share with user", response);
+      // console.log("response of share with user", response);
 
       return response;
     } catch (error: any) {
@@ -26,7 +38,7 @@ export const getSharedDataAsync =
     try {
       const response = await getSharedDataApi(username, path);
       dispatch(getSharedData(response));
-      console.log("response of shred item", response);
+      // console.log("response of shred item", response);
       return response;
     } catch (error: any) {
       throw new Error(
@@ -35,3 +47,52 @@ export const getSharedDataAsync =
       );
     }
   };
+
+export const deleteSharedDataAsync =
+  (id: string, username?: string) =>
+  async (dispatch: AppDispatch): Promise<void> => {
+    try {
+      const response = await deleteSharedDataApi(id, username);
+
+      if (!response || response.error) {
+        throw new Error(response?.error || "Unknown error occurred");
+      }
+
+      dispatch(deleteShareData(response));
+    } catch (error: any) {
+      console.error("Error while deleting shared data:", error);
+      throw new Error(
+        `Error while deleting data: ${
+          error.response?.data?.message || error.message || "Unexpected error"
+        }`
+      );
+    }
+  };
+
+export const updateSharePermissionAsync =
+  (shareId: number, permission: number) => async (dispatch: AppDispatch) => {
+    try {
+      const response = await editSharePermissionApi(shareId, permission);
+      dispatch(editSharePermissions(response));
+      return response;
+    } catch (error: any) {
+      throw new Error(
+        "Error updating share: " +
+          (error.response?.data?.message || error.message)
+      );
+    }
+  };
+
+export const getAllUsersAsync = () => async (dispatch: AppDispatch) => {
+  try {
+    const response = await getAllUsersApi();
+    if (response) {
+      dispatch(getAllUsers(response));
+    }
+  } catch (error: any) {
+    throw new Error(
+      "Error getting all users: " +
+        (error.response?.data?.message || error.message)
+    );
+  }
+};

@@ -1,10 +1,15 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
+  deleteSharedDataAsync,
   getSharedDataAsync,
   inviteUserAsync,
 } from "../../../../../Redux/thunk";
 import { AppDispatch, RootState } from "../../../../../Redux/store";
+import Button from "../../../../../common/Button";
+import { MdContentCopy } from "react-icons/md";
+import { IoLinkOutline } from "react-icons/io5";
+import { EditShareMenu } from "./EditShareMenu";
 interface ShareWithModalProps {
   open: boolean;
   setOpen: (open: boolean) => void;
@@ -17,23 +22,37 @@ export const ShareWithModal: React.FC<ShareWithModalProps> = ({
   fileName,
   path,
 }) => {
-  const [accessLevel, setAccessLevel] = useState("Restricted");
-  const [showAccessDropdown, setShowAccessDropdown] = useState(false);
   const { sharedFolders } = useSelector((state: RootState) => state.inviteUser);
+
   const [username, setUserName] = useState("");
   const dispatch = useDispatch<AppDispatch>();
 
+  useEffect(() => {
+    if (path && open) {
+      dispatch(getSharedDataAsync(undefined, path));
+    }
+  }, [open]);
+
   const handleShareWithUser = (value: string) => {
     const data = { username: value, folderPath: path };
-    dispatch(inviteUserAsync(data));
-    dispatch(getSharedDataAsync(undefined, path));
+    if (value) {
+      dispatch(inviteUserAsync(data));
+    } else {
+      return;
+    }
     setUserName("");
+  };
+
+  const handleUnShare = (id: string | number, shareWith?: string | null) => {
+    if (id && shareWith != null) {
+      dispatch(deleteSharedDataAsync(id as string, shareWith));
+    }
   };
 
   return (
     <div>
       <div
-        className={`fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-10 ${
+        className={`fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center h-full overflow-y-scroll z-10 ${
           open ? "" : "hidden"
         }`}>
         <div className="bg-white rounded-lg shadow-lg w-full max-w-lg">
@@ -82,90 +101,68 @@ export const ShareWithModal: React.FC<ShareWithModalProps> = ({
           </div>
 
           {/* People with access */}
-          <div className="px-4 pb-2">
+          <div className=" px-4 pb-2 h-96 overflow-y-scroll">
             <h3 className="text-sm font-medium text-gray-700 mb-2">
               People with access
             </h3>
 
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center">
-                <div className="bg-purple-600 text-white w-8 h-8 rounded-full flex items-center justify-center mr-3">
-                  N
-                </div>
-                <div>
-                  <div className="font-medium">Nensi Markana (you)</div>
-                  <div className="text-xs text-gray-500">
-                    nm.doesdodsoft@gmail.com
-                  </div>
-                </div>
-              </div>
-              <span className="text-gray-500 text-sm">Owner</span>
-            </div>
-          </div>
-
-          {/* General access */}
-          <div className="px-4 pb-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">
-              General access
-            </h3>
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center">
-                <div className="bg-gray-100 rounded-full p-2 mr-3">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-5 w-5 text-gray-500"
-                    viewBox="0 0 20 20"
-                    fill="currentColor">
-                    <path
-                      fillRule="evenodd"
-                      d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                </div>
-                <div className="relative">
-                  <button
-                    onClick={() => setShowAccessDropdown(!showAccessDropdown)}
-                    className="flex items-center">
-                    <span className="font-medium">{accessLevel}</span>
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-5 w-5 ml-1 text-gray-500"
-                      viewBox="0 0 20 20"
-                      fill="currentColor">
-                      <path
-                        fillRule="evenodd"
-                        d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </button>
-                  {showAccessDropdown && (
-                    <div className="absolute top-full left-0 mt-1 bg-white border rounded-md shadow-lg z-10 w-48">
-                      <div
-                        className="p-2 hover:bg-gray-100 cursor-pointer"
-                        onClick={() => {
-                          setAccessLevel("Anyone with the link");
-                          setShowAccessDropdown(false);
-                        }}>
-                        Anyone with the link
+            {sharedFolders &&
+              sharedFolders.map((folder: any, index: number) => (
+                <div key={index}>
+                  {folder.shareTypeSystemName === "user" ? (
+                    <div className="flex items-center justify-between mb-4 relative">
+                      <div className="flex items-center">
+                        <div className="bg-purple-600 text-white w-8 h-8 rounded-full flex items-center justify-center mr-3">
+                          {folder.sharedWith.charAt(0).toUpperCase()}
+                        </div>
+                        <div>
+                          <div className="font-medium">{folder.sharedWith}</div>
+                          <div className="text-xs text-gray-500">
+                            {folder.emails}
+                          </div>
+                        </div>
                       </div>
-                      <div
-                        className="p-2 hover:bg-gray-100 cursor-pointer"
-                        onClick={() => {
-                          setAccessLevel("Restricted");
-                          setShowAccessDropdown(false);
-                        }}>
-                        Restricted
+                      <EditShareMenu
+                        index={index}
+                        id={folder.id}
+                        shareWith={folder.sharedWith}
+                        handleUnShare={handleUnShare}
+                        permission={folder.permissions}
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center">
+                        <div className="bg-purple-600 text-white w-8 h-8 rounded-full flex items-center justify-center mr-3">
+                          <IoLinkOutline />
+                        </div>
+                        <div>
+                          <div className="font-medium">Shared link</div>
+                          <div className="text-xs text-gray-500">
+                            {folder.shareTypeSystemName}
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          onClick={() => {
+                            navigator.clipboard.writeText(folder.url);
+                          }}
+                          className="text-blue-600">
+                          <MdContentCopy />
+                        </Button>
+                        <EditShareMenu
+                          index={index}
+                          id={folder.id}
+                          shareWith={folder.sharedWith}
+                          handleUnShare={handleUnShare}
+                          permission={folder.permissions}
+                        />
                       </div>
                     </div>
                   )}
                 </div>
-              </div>
-            </div>
-            <div className="text-xs text-gray-500 ml-10">
-              Only people with access can open with the link
-            </div>
+              ))}
           </div>
 
           {/* Footer */}

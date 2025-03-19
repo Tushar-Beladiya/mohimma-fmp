@@ -51,6 +51,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
       setError(
         "Enter a stronger password. Avoid common patterns like 'abcd' or '1234'."
       );
+      console.log("error", error);
       return false;
     }
     const isValid = passwordRegex.test(password);
@@ -96,8 +97,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
           });
           setPassword("");
         }}
-        onConfirm={HandleShareFileAsPrivate}
-      >
+        onConfirm={HandleShareFileAsPrivate}>
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
@@ -114,8 +114,7 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
               type="button"
               className="text-gray-500 hover:text-gray-700 focus:outline-none"
               onClick={togglePasswordVisibility}
-              aria-label={showPassword ? "Hide password" : "Show password"}
-            >
+              aria-label={showPassword ? "Hide password" : "Show password"}>
               {!showPassword ? <FiEyeOff size={18} /> : <FiEye size={18} />}
             </button>
           </div>

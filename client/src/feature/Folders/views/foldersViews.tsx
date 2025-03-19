@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import {
   FaFileAlt,
@@ -37,6 +37,7 @@ import ShareDropDown from "./component/ShareDropDown";
 // Utils
 import { useFolder } from "../../../context/FolderContext";
 import { getFileExtension } from "../../../utils/GetFileExtension";
+import { folder } from "jszip";
 
 // Types
 interface FileData {
@@ -69,7 +70,6 @@ export const FoldersViews: React.FC<FoldersViewsProps> = ({ showActions }) => {
   const dispatch = useDispatch<AppDispatch>();
 
   // Redux state
-
   const folders = useSelector(
     (state: RootState) => state.folders.folders
   ) as FolderData[];
@@ -97,8 +97,35 @@ export const FoldersViews: React.FC<FoldersViewsProps> = ({ showActions }) => {
   const [previewFile, setPreviewFile] = useState<FileData | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-
+  //  data with user
   const { setFolderPath } = useFolder();
+  const { usersData } = useFolder();
+  const { sharedFolders } = useSelector((state: RootState) => state.inviteUser);
+  const [filteredFolder, setFilteredFolder] = useState<FolderData[]>(folders);
+  const [filteredFiles, setFilteredFiles] = useState<FileData[]>(files);
+  useEffect(() => {
+    console.log(usersData, "data");
+
+    if (usersData) {
+      setFilteredFolder(
+        folders.filter((folder) => {
+          return sharedFolders.some(
+            (sharedFolder) => sharedFolder.path === folder.path
+          );
+        })
+      );
+      setFilteredFiles(
+        files.filter((file) => {
+          return sharedFolders.some(
+            (sharedFolder) => sharedFolder.path === file.path
+          );
+        })
+      );
+    } else {
+      setFilteredFolder([...folders]);
+      setFilteredFiles([...files]);
+    }
+  }, [usersData, sharedFolders, folders, files]);
 
   // Helper functions
   const copyToClipboard = (text: string): void => {
@@ -193,15 +220,13 @@ export const FoldersViews: React.FC<FoldersViewsProps> = ({ showActions }) => {
       </div>
 
       {/* Folders List */}
-      {folders.map((folder: FolderData) => (
+      {filteredFolder.map((folder: FolderData) => (
         <div
           key={folder.name}
-          className="bg-gray-200/70 p-2 rounded-lg shadow-md hover:shadow-lg cursor-pointer flex items-center justify-between"
-        >
+          className="bg-gray-200/70 p-2 rounded-lg shadow-md hover:shadow-lg cursor-pointer flex items-center justify-between">
           <div
             className="flex items-center gap-2"
-            onClick={() => handleFolderClick(folder.name, folder.path)}
-          >
+            onClick={() => handleFolderClick(folder.name, folder.path)}>
             <div className="bg-sky-800/10 p-2 rounded-xl">
               <PiFolderSimple className="text-2xl" />
             </div>
@@ -245,15 +270,13 @@ export const FoldersViews: React.FC<FoldersViewsProps> = ({ showActions }) => {
       ))}
 
       {/* Files List */}
-      {files.map((file: FileData) => (
+      {filteredFiles.map((file: FileData) => (
         <div
           key={file.name}
-          className="bg-white border border-gray-100 p-3 rounded-lg shadow-sm hover:shadow-md hover:border-blue-100 transition-all duration-200 flex items-center justify-between relative group"
-        >
+          className="bg-white border border-gray-100 p-3 rounded-lg shadow-sm hover:shadow-md hover:border-blue-100 transition-all duration-200 flex items-center justify-between relative group">
           <div
             className="flex items-center gap-3"
-            onClick={() => handleFileClick(file)}
-          >
+            onClick={() => handleFileClick(file)}>
             <div className="bg-blue-50 p-2.5 rounded-lg text-blue-500 group-hover:bg-blue-100 transition-colors">
               {getFileIcon(file.name)}
             </div>
@@ -301,6 +324,17 @@ export const FoldersViews: React.FC<FoldersViewsProps> = ({ showActions }) => {
           )}
         </div>
       ))}
+      {/* {usersData ? (
+        <div>
+          {sharedFolders &&
+            sharedFolders.length > 0 &&
+            sharedFolders.map((folder) => <div>{folder.sharedWith}</div>)}
+        </div>
+      ) : (
+        <>
+        
+        </>
+      )} */}
 
       {/* Modals */}
       <ChooseDestinationModal

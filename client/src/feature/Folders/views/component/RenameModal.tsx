@@ -28,7 +28,7 @@ const RenameModal: React.FC<RenameModalProps> = ({
 }) => {
   const { isOpen, isRenameFile, name } = renameModalData;
   const [fileNameForInput, setFileNameForInput] = useState(name);
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [error, setError] = useState("");
   const dispatch = useDispatch<AppDispatch>();
 
