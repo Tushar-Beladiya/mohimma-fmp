@@ -106,7 +106,6 @@ export const InviteUser = async (path: string, username: string) => {
 
 export const getSharedData = async (username?: string, path?: string) => {
   try {
-    // old code
     const shares = await client.shares.list(path);
     if (!username) {
       return { success: true, result: shares };
@@ -127,7 +126,7 @@ export const getUsers = async () => {
   }
 };
 
-export const updateShareInviteUser = async (shareId: string | number, permissions: number) => {
+export const updateSharePermission = async (shareId: string | number, permissions: number) => {
   try {
     const response = await client.shares.edit.permissions(shareId, permissions);
     return { success: true, message: 'Share updated successfully', result: response };

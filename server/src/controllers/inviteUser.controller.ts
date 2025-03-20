@@ -118,7 +118,7 @@ export const updateShareUser = async (req: Request, res: Response): Promise<void
     }
 
     // Call service function to update the share
-    const response = await inviteUserService.updateShareInviteUser(shareId, permission);
+    const response = await inviteUserService.updateSharePermission(shareId, permission);
 
     if (response.success) {
       res.status(200).json({
