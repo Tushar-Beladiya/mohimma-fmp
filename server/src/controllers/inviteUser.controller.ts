@@ -72,8 +72,7 @@ export const getUsers = async (_req: Request, res: Response): Promise<void> => {
 
 export const deleteShareUser = async (req: Request, res: Response): Promise<void> => {
   try {
-    const { shareId } = req.query;
-    const { shareWith } = req.body;
+    const { shareId, shareWith } = req.query;
     // Validate userId
     if (!shareId) {
       res.status(400).json({
@@ -83,7 +82,7 @@ export const deleteShareUser = async (req: Request, res: Response): Promise<void
     }
 
     // Call service function to delete the share
-    const response = await inviteUserService.deleteShareItem(shareId as string, shareWith);
+    const response = await inviteUserService.deleteShareItem(Number(shareId), shareWith as string);
 
     if (response.success) {
       res.status(200).json({

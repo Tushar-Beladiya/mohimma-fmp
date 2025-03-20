@@ -19,6 +19,8 @@ export const shareWithUserApi = async (username: string, path: string) => {
 
 export const getSharedDataApi = async (username?: string, path?: string) => {
   try {
+    console.log("calling....", username, path);
+
     const response = await axios.get(`${API_URL}/shared`, {
       params: { username, path },
     });

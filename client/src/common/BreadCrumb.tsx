@@ -7,7 +7,7 @@ import { AppDispatch } from "../Redux/store";
 
 const Breadcrumb: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { folderPath, setFolderPath, setUsersData } = useFolder();
+  const { folderPath, setFolderPath, setUsersData, usersData } = useFolder();
   const parts = folderPath.split("/").filter(Boolean);
 
   useEffect(() => {
@@ -20,7 +20,7 @@ const Breadcrumb: React.FC = () => {
       );
     };
     fetchData();
-  }, [folderPath, dispatch, setFolderPath]);
+  }, [folderPath, setFolderPath]);
 
   const handleClick = (index: number) => {
     const subFolderPath = parts.slice(0, index + 1).join("/");

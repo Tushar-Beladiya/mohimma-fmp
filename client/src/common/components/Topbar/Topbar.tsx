@@ -23,18 +23,26 @@ export const Topbar: React.FC<TopbarProps> = ({ name, children }) => {
   const { users } = useSelector((state: RootState) => state.inviteUser);
   const [open, setOpen] = useState(false);
   const { setUsersData } = useFolder();
+  const [userFiltered, setUserFiltered] = useState<string>("");
+
+  const getUsers = () => {
+    dispatch(getAllUsersAsync());
+  };
   useEffect(() => {
     if (open) {
       getUsers();
     }
   }, [open]);
-  const getUsers = () => {
-    dispatch(getAllUsersAsync());
-  };
+
   const handleGetUserData = (username: string) => {
     if (username) {
-      dispatch(getSharedDataAsync(username));
-      setUsersData(true);
+      if (username === "admin") {
+        setUsersData(false);
+      } else {
+        dispatch(getSharedDataAsync(username, undefined));
+        setUsersData(true);
+        setUserFiltered(username);
+      }
     }
   };
   return (
@@ -60,11 +68,11 @@ export const Topbar: React.FC<TopbarProps> = ({ name, children }) => {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <input
-            className=" pl-4 p-2 rounded-3xl bg-white"
-            type="text"
-            placeholder="Search"
-          />
+          {userFiltered && (
+            <div className="p-2 rounded-2xl bg-white">
+              <p className="text-sm">{userFiltered}</p>
+            </div>
+          )}
           <div className="relative group">
             <button
               onClick={() => {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   deleteSharedDataAsync,
@@ -31,7 +31,7 @@ export const ShareWithModal: React.FC<ShareWithModalProps> = ({
     if (path && open) {
       dispatch(getSharedDataAsync(undefined, path));
     }
-  }, [open]);
+  }, [open, path]);
 
   const handleShareWithUser = (value: string) => {
     const data = { username: value, folderPath: path };
@@ -47,6 +47,35 @@ export const ShareWithModal: React.FC<ShareWithModalProps> = ({
     if (id && shareWith != null) {
       dispatch(deleteSharedDataAsync(id as string, shareWith));
     }
+  };
+
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const { users } = useSelector((state: RootState) => state.inviteUser);
+  // Predefined list of usernames/emails
+  const suggestions = users;
+
+  // Handle outside clicks to close suggestions
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
+        setShowSuggestions(false);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  // Handle suggestion selection
+  const handleSelectSuggestion = (suggestion: string) => {
+    setUserName(suggestion);
+    setShowSuggestions(false);
   };
 
   return (
@@ -90,14 +119,31 @@ export const ShareWithModal: React.FC<ShareWithModalProps> = ({
           </div>
 
           {/* Search Input */}
-          <div className="p-4">
+          <div className="p-4 relative w-full" ref={wrapperRef}>
             <input
               type="text"
               value={username}
-              onChange={(e) => setUserName(e.target.value)}
+              onChange={(e) => {
+                setUserName(e.target.value);
+                setShowSuggestions(true);
+              }}
               placeholder="Add people, groups, and calendar events"
               className="w-full p-3 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
+            {showSuggestions && (
+              <div className="absolute z-10 w-full mt-1 bg-white shadow-lg rounded-md border">
+                <ul className="py-1">
+                  {suggestions.map((suggestion, index) => (
+                    <li
+                      key={index}
+                      onClick={() => handleSelectSuggestion(suggestion)}
+                      className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
+                      {suggestion}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
           </div>
 
           {/* People with access */}
@@ -128,6 +174,7 @@ export const ShareWithModal: React.FC<ShareWithModalProps> = ({
                         shareWith={folder.sharedWith}
                         handleUnShare={handleUnShare}
                         permission={folder.permissions}
+                        type={folder.shareTypeSystemName}
                       />
                     </div>
                   ) : (
@@ -157,6 +204,7 @@ export const ShareWithModal: React.FC<ShareWithModalProps> = ({
                           shareWith={folder.sharedWith}
                           handleUnShare={handleUnShare}
                           permission={folder.permissions}
+                          type={folder.shareTypeSystemName}
                         />
                       </div>
                     </div>

@@ -9,17 +9,17 @@ import {
   getFoldersAsync,
 } from "../../../../Redux/folderThunk";
 import { useNavigate } from "react-router-dom";
-import { useFolder } from "../../../../context/FolderContext";
+import { getAllUsersAsync } from "../../../../Redux/thunk";
 
 export const HomeWorkSpaceView = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
   const folders = useSelector((state: RootState) => state.folders.folders);
   const navigate = useNavigate();
-  const { folderPath } = useFolder();
 
   useEffect(() => {
     dispatch(getFoldersAsync({}));
+    dispatch(getAllUsersAsync());
   }, []);
 
   const handleCreateFolder = (folderName: string) => {
@@ -49,8 +49,7 @@ export const HomeWorkSpaceView = () => {
             <div
               key={index}
               onClick={() => handleFolderClick(folder.name)}
-              className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg flex flex-col cursor-pointer"
-            >
+              className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg flex flex-col cursor-pointer">
               <div className="flex items-center justify-center p-6 h-[160px] bg-sky-800/10">
                 <FaFolder className="text-3xl" />
               </div>
@@ -61,8 +60,7 @@ export const HomeWorkSpaceView = () => {
           {/* Create Folder Button */}
           <div
             onClick={() => setModalOpen(!isModalOpen)}
-            className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg flex flex-col items-center justify-center h-auto cursor-pointer"
-          >
+            className="bg-white p-4 rounded-lg shadow-md hover:shadow-lg flex flex-col items-center justify-center h-auto cursor-pointer">
             <TbCircleDashedPlus className="text-6xl text-grey-100/20" />
           </div>
         </div>

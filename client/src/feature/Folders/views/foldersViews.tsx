@@ -99,7 +99,7 @@ export const FoldersViews: React.FC<FoldersViewsProps> = ({ showActions }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   //  data with user
   const { setFolderPath } = useFolder();
-  const { usersData } = useFolder();
+  const { usersData, setUsersData } = useFolder();
   const { sharedFolders } = useSelector((state: RootState) => state.inviteUser);
   const [filteredFolder, setFilteredFolder] = useState<FolderData[]>(folders);
   const [filteredFiles, setFilteredFiles] = useState<FileData[]>(files);
@@ -122,8 +122,8 @@ export const FoldersViews: React.FC<FoldersViewsProps> = ({ showActions }) => {
         })
       );
     } else {
-      setFilteredFolder([...folders]);
-      setFilteredFiles([...files]);
+      setFilteredFolder(folders);
+      setFilteredFiles(files);
     }
   }, [usersData, sharedFolders, folders, files]);
 
@@ -151,9 +151,9 @@ export const FoldersViews: React.FC<FoldersViewsProps> = ({ showActions }) => {
   // Event handlers
   const handleFolderClick = (name: string, path: string): void => {
     const subpath = path.replace(/^\//, "");
-
     setFolderPath(subpath);
     dispatch(getFoldersAsync({ name, subFolderPath: subpath }));
+    // setUsersData(false);
   };
 
   const handleDelete = (name: string, subFolderPath?: string): void => {

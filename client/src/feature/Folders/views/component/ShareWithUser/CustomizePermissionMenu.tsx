@@ -16,6 +16,7 @@ interface CustomizePermissionMenuProps {
   onClose: () => void;
   initialPermission?: number;
   shareId: number;
+  type: string;
 }
 
 export const CustomizePermissionMenu: React.FC<
@@ -130,7 +131,6 @@ export const CustomizePermissionMenu: React.FC<
                 Delete
               </label>
             </div>
-
             <div className="flex items-center">
               <input
                 type="checkbox"

@@ -7,12 +7,14 @@ interface EditShareMenuProps {
   id: string | number;
   shareWith?: string | null;
   permission: number;
+  type: string;
   handleUnShare: (id: string | number, shareWith?: string | null) => void;
 }
 
 export const EditShareMenu: React.FC<EditShareMenuProps> = ({
   index,
   id,
+  type,
   shareWith,
   permission,
   handleUnShare,
@@ -34,7 +36,7 @@ export const EditShareMenu: React.FC<EditShareMenuProps> = ({
           <button
             onClick={() => {
               console.log("Edit");
-              handleUnShare(id, shareWith ? shareWith : undefined);
+              handleUnShare(id, shareWith);
               setOpenDropdown(null);
             }}
             className="w-full text-sm hover:bg-gray-100 p-2 text-left flex items-center gap-2 text-red-500">
@@ -58,6 +60,7 @@ export const EditShareMenu: React.FC<EditShareMenuProps> = ({
                   initialPermission={permission}
                   onClose={() => setOpenCustomizePermission(false)}
                   shareId={Number(id)}
+                  type={type}
                 />
               </div>
             )}
