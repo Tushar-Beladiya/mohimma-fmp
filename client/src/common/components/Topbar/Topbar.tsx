@@ -1,6 +1,6 @@
 import { IoMdSettings } from "react-icons/io";
 import { IoFolderOutline, IoPeople } from "react-icons/io5";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import CreateDropDown from "../../../feature/Folders/views/component/CreateDropDown";
 import { getAllUsersAsync, getSharedDataAsync } from "../../../Redux/thunk";
@@ -22,17 +22,21 @@ export const Topbar: React.FC<TopbarProps> = ({ name, children }) => {
   const dispatch = useDispatch<AppDispatch>();
   const { users } = useSelector((state: RootState) => state.inviteUser);
   const [open, setOpen] = useState(false);
-  const { setUsersData } = useFolder();
+  const { setUsersData, usersData } = useFolder();
   const [userFiltered, setUserFiltered] = useState<string>("");
 
-  const getUsers = () => {
+  const getUsers = useCallback(() => {
     dispatch(getAllUsersAsync());
-  };
+  }, [dispatch]);
+
   useEffect(() => {
     if (open) {
       getUsers();
     }
-  }, [open]);
+    if (usersData === false) {
+      setUserFiltered("");
+    }
+  }, [open, getUsers, usersData]);
 
   const handleGetUserData = (username: string) => {
     if (username) {

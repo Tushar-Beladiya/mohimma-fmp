@@ -21,7 +21,7 @@ interface CustomizePermissionMenuProps {
 
 export const CustomizePermissionMenu: React.FC<
   CustomizePermissionMenuProps
-> = ({ onClose, initialPermission, shareId }) => {
+> = ({ onClose, initialPermission, shareId, type }) => {
   const dispatch = useDispatch<AppDispatch>();
   const [currentPermission, setCurrentPermission] = useState<number>(
     initialPermission ?? Permission.All
@@ -131,19 +131,20 @@ export const CustomizePermissionMenu: React.FC<
                 Delete
               </label>
             </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                id="share"
-                checked={hasPermission(Permission.Share)}
-                onChange={() => togglePermission(Permission.Share)}
-                className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
-              />
-              <label htmlFor="share" className="ml-2 text-gray-800 text-sm">
-                Share
-              </label>
-            </div>
-
+            {type !== "publicLink" && (
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="share"
+                  checked={hasPermission(Permission.Share)}
+                  onChange={() => togglePermission(Permission.Share)}
+                  className="w-4 h-4 rounded border-gray-300 text-blue-500 focus:ring-blue-500"
+                />
+                <label htmlFor="share" className="ml-2 text-gray-800 text-sm">
+                  Share
+                </label>
+              </div>
+            )}
             <div className="flex justify-between items-center px-4 py-2">
               <button
                 className="text-gray-600 hover:text-gray-800 text-sm"
