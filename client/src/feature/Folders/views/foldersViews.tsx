@@ -37,7 +37,6 @@ import ShareDropDown from "./component/ShareDropDown";
 // Utils
 import { useFolder } from "../../../context/FolderContext";
 import { getFileExtension } from "../../../utils/GetFileExtension";
-import { folder } from "jszip";
 
 // Types
 interface FileData {
@@ -135,16 +134,16 @@ export const FoldersViews: React.FC<FoldersViewsProps> = ({ showActions }) => {
 
   const getFileIcon = (filename: string): JSX.Element => {
     if (filename === "") return <FaRegFileAlt className="text-lg" />;
+    if (filename) {
+      const ext = getFileExtension(filename);
 
-    const ext = getFileExtension(filename);
-
-    if (["pdf"].includes(ext)) return <FaFilePdf className="text-lg" />;
-    if (["mp4", "webm", "mov"].includes(ext))
-      return <FaFileVideo className="text-lg" />;
-    if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext))
-      return <FaFileImage className="text-lg" />;
-    if (["md", "txt"].includes(ext)) return <FaFileAlt className="text-lg" />;
-
+      if (["pdf"].includes(ext)) return <FaFilePdf className="text-lg" />;
+      if (["mp4", "webm", "mov"].includes(ext))
+        return <FaFileVideo className="text-lg" />;
+      if (["jpg", "jpeg", "png", "gif", "webp"].includes(ext))
+        return <FaFileImage className="text-lg" />;
+      if (["md", "txt"].includes(ext)) return <FaFileAlt className="text-lg" />;
+    }
     return <FaRegFileAlt className="text-lg" />;
   };
 

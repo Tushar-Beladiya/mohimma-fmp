@@ -8,7 +8,7 @@ import {
 import { AppDispatch } from "./store";
 
 export const shareFile =
-  (filePath: string, publicAccess: boolean = false) =>
+  (filePath: string, publicAccess?: boolean) =>
   async (dispatch: AppDispatch) => {
     try {
       dispatch(shareFileRequest(true));

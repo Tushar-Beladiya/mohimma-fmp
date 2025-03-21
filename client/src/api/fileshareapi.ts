@@ -4,10 +4,10 @@ const API_URL = `${process.env.REACT_APP_BACKEND_URL}/api/fileshare`;
 
 export const shareFileApi = async (
   filePath: string,
-  publicAccess: boolean = false
+  publicAccess?: boolean
 ) => {
   try {
-    const params = { filePath, publicAccess: false };
+    const params = { filePath, publicAccess };
 
     // Add publicAccess only if it's true
     if (publicAccess) {

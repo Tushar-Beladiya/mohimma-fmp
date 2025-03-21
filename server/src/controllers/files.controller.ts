@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-import Client from 'nextcloud-node-client';
 import { filesService } from '../services';
 
 export const uploadFile = async (req: Request, res: Response): Promise<Response> => {
@@ -39,18 +38,7 @@ export const downloadFile = async (req: Request, res: Response): Promise<void> =
       });
     }
 
-    const client = new Client();
-
-    const file = await client.getFile(filePath as string);
-
-    if (!file) {
-      res.status(404).json({
-        success: false,
-        message: 'File not found on Nextcloud',
-      });
-    }
-
-    const fileBuffer = await filesService.downloadFile(file);
+    const fileBuffer = await filesService.downloadFile(filePath as string);
 
     // Extract filename from the path
     const fileName = (typeof filePath === 'string' ? filePath : '').split('/').pop() || 'downloaded_file';
@@ -166,18 +154,7 @@ export const previewFile = async (req: Request, res: Response): Promise<void> =>
       });
     }
 
-    const client = new Client();
-
-    const file = await client.getFile(filePath as string);
-
-    if (!file) {
-      res.status(404).json({
-        success: false,
-        message: 'File not found on Nextcloud',
-      });
-    }
-
-    const fileBuffer = await filesService.downloadFile(file);
+    const fileBuffer = await filesService.downloadFile(filePath as string);
 
     res.status(200).json({
       success: true,

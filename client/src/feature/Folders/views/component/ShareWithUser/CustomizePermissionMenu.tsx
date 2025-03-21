@@ -52,7 +52,7 @@ export const CustomizePermissionMenu: React.FC<
   };
 
   const updateSharePermission = () => {
-    if (typeof shareId === "number" && shareId & currentPermission) {
+    if (typeof shareId === "number" && shareId && currentPermission) {
       dispatch(updateSharePermissionAsync(shareId, currentPermission));
     }
   };

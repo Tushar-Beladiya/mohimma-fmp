@@ -50,9 +50,9 @@ export const createFolderAsync =
       dispatch(setLoading(true));
       const newFolder = await createFolderApi(folderName, subFolderPath || "");
 
-      if (newFolder && newFolder.result && newFolder.result.memento) {
-        const folderName = newFolder.result.memento.baseName;
-        const folderPath = newFolder.result.memento.name;
+      if (newFolder && newFolder.result) {
+        const folderName = newFolder.result.baseName;
+        const folderPath = newFolder.result.name;
         dispatch(addFolder({ name: folderName, path: folderPath }));
       } else {
         throw new Error("Invalid response structure");

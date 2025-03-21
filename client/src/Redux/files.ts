@@ -81,7 +81,6 @@ const file = createSlice({
       toast.success(`File copied!`);
     },
     renameFile(state, action) {
-      debugger;
       const idx = state.files.findIndex(
         (folder) => folder.name === action.payload.result.oldFileName
       );
