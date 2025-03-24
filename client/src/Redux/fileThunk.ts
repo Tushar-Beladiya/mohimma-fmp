@@ -9,6 +9,7 @@ import {
   copyFile,
   renameFile,
   previewFailure,
+  setFileLoading,
 } from "./files";
 import {
   copyFileApi,
@@ -74,7 +75,9 @@ export const copyFileAsync =
   (sourcePath: string, destinationPath: string) =>
   async (dispatch: AppDispatch) => {
     try {
+      dispatch(setFileLoading(true));
       const response = await copyFileApi(sourcePath, destinationPath);
+      dispatch(setFileLoading(false));
       dispatch(copyFile(response));
     } catch (error: any) {
       console.error("Error copying file:", error.message);

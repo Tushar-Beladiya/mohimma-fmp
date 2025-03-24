@@ -28,6 +28,14 @@ const file = createSlice({
   name: "files",
   initialState,
   reducers: {
+    setFileLoading: (state, action) => {
+      state.uploadFileLoading = action.payload;
+      if (state.uploadFileLoading === true) {
+        toast.loading("loading...");
+      } else {
+        toast.dismiss();
+      }
+    },
     setFiles: (state, action) => {
       state.files = action.payload;
     },
@@ -42,15 +50,8 @@ const file = createSlice({
     },
     uploadFileSuccess: (state, action: PayloadAction<{ result: File }>) => {
       state.uploadFileLoading = false;
-      console.log(
-        "files before upload",
-        state.files,
-        "sdsfsdf",
-        action.payload.result
-      );
 
       state.files = [...state.files, { ...action.payload.result }];
-      console.log("files after upload", state.files);
     },
     uploadFileFailure: (state, action: PayloadAction<string>) => {
       state.uploadFileLoading = false;
@@ -105,5 +106,6 @@ export const {
   renameFile,
   previewFailure,
   setFiles,
+  setFileLoading,
 } = file.actions;
 export const fileReducer = file.reducer;

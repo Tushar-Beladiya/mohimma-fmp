@@ -4,8 +4,6 @@ const API_URL = `${process.env.REACT_APP_BACKEND_URL}/api/inviteuser`;
 
 export const shareWithUserApi = async (username: string, path: string) => {
   try {
-    console.log("calling....", username, path);
-
     const response = await axios.get(
       `${API_URL}?username=${username}&folderPath=${path}`
     );
@@ -19,8 +17,6 @@ export const shareWithUserApi = async (username: string, path: string) => {
 
 export const getSharedDataApi = async (username?: string, path?: string) => {
   try {
-    console.log("calling....", username, path);
-
     const response = await axios.get(`${API_URL}/shared`, {
       params: { username, path },
     });

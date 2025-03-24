@@ -52,11 +52,15 @@ const inviteUser = createSlice({
       }
     },
     shareWithUser: (state, action) => {
-      state.sharedFolders = [...state.sharedFolders, ...action.payload.result];
+      if (action.payload.result.length !== 0) {
+        state.sharedFolders = [
+          ...state.sharedFolders,
+          ...action.payload.result,
+        ];
+      }
       toast.success("Shared successfully");
     },
     getSharedData: (state, action) => {
-      console.log("shared data ", action.payload.result);
       state.sharedFolders = [...action.payload.result];
       toast.success("all shared links fetched successfully");
     },

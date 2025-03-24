@@ -53,6 +53,11 @@ const SetPasswordModal: React.FC<SetPasswordModalProps> = ({
       );
       console.log("error", error);
       return false;
+    } else {
+      if (password.length < 10) {
+        setError("Password must be at least 10 characters long.");
+        return false;
+      }
     }
     const isValid = passwordRegex.test(password);
     if (!isValid) {

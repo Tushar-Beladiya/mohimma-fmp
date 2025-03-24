@@ -36,7 +36,6 @@ export const getSharedDataAsync =
   (username?: string, path?: string) => async (dispatch: AppDispatch) => {
     try {
       dispatch(isLoading(true));
-      console.log("username***********", username, path);
 
       const response = await getSharedDataApi(username, path);
       dispatch(getSharedData(response));

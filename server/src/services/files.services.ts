@@ -1,5 +1,3 @@
-//  new code
-
 import NextcloudClient from 'nextcloud-link';
 import { UploadRequestBody } from 'src/types/files.types';
 import { Readable } from 'stream';
@@ -37,7 +35,6 @@ export const uploadFile = async (body: UploadRequestBody, file: Express.Multer.F
       return { error: 'File already exists', path: remoteFilePath };
     }
 
-    // Upload the file
     await client.put(remoteFilePath, file.buffer);
 
     return { path: remoteFilePath, name: actualFileName };
@@ -46,19 +43,19 @@ export const uploadFile = async (body: UploadRequestBody, file: Express.Multer.F
     return { error: 'File upload failed' };
   }
 };
-
 export const downloadFile = async (filePath: string): Promise<Buffer> => {
   try {
     const file = await client.exists(filePath);
     if (file) {
-      const fileBuffer = await client.get(filePath);
-      return Buffer.from(fileBuffer, 'base64');
+      const fileData = Buffer.from(await client.get(filePath), 'binary');
+
+      return fileData;
     }
+    throw new Error('File not found');
   } catch (error) {
-    console.error(error);
-    return Buffer.from('');
+    console.error('Error downloading file:', error);
+    throw error; // Better to throw than return empty buffer
   }
-  return Buffer.from('');
 };
 
 export const deleteFile = async (filePath: string): Promise<string> => {
@@ -102,19 +99,21 @@ export const copyFile = async (sourcePath: string, destinationPath: string): Pro
         newFileName = `${name} (${index})${extension || ''}`;
         index++;
       }
+      const fileBuffer = Buffer.isBuffer(content) ? content : Buffer.from(content, 'binary');
       // Create the duplicate file with the unique name
-      await uploadFile({ folderName: `/${destinationPath}`, fileName: newFileName }, {
-        buffer: Buffer.isBuffer(content) ? content : Buffer.from(content, 'base64'),
-        fieldname: 'file',
+      const mockFile: Express.Multer.File = {
+        fieldname: '',
         originalname: newFileName,
         encoding: '7bit',
         mimetype: 'application/octet-stream',
-        size: Buffer.from(content, 'base64').length,
-        stream: Readable.from(content),
+        size: fileBuffer.length,
+        buffer: fileBuffer,
+        stream: new Readable(),
         destination: '',
-        filename: newFileName,
+        filename: '',
         path: '',
-      } as Express.Multer.File);
+      };
+      await uploadFile({ folderName: `/${destinationPath}`, fileName: newFileName }, mockFile);
 
       return { path: `/${destinationPath}/${newFileName}`, name: newFileName };
     }

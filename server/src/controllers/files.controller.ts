@@ -128,7 +128,6 @@ export const renameFile = async (req: Request, res: Response): Promise<Response>
     }
 
     const fileData = await filesService.renameFile(filePath, newFileName);
-    console.log('fileData', fileData);
     return res.status(200).json({
       success: true,
       message: `File renamed successfully`,

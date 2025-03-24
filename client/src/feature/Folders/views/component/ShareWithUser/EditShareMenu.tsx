@@ -35,7 +35,6 @@ export const EditShareMenu: React.FC<EditShareMenuProps> = ({
         <div className="w-48 p-4">
           <button
             onClick={() => {
-              console.log("Edit");
               handleUnShare(id, shareWith);
               setOpenDropdown(null);
             }}

@@ -1,23 +1,22 @@
-import Client, { ICreateShare } from 'nextcloud-node-client';
+import NextcloudClient from 'nextcloud-link';
 
-const client = new Client();
+const client = new NextcloudClient({
+  url: process.env.NEXTCLOUD_URL || 'http://localhost:8080',
+  password: process.env.NEXTCLOUD_PASSWORD,
+  username: process.env.NEXTCLOUD_USERNAME,
+});
 
 export const shareFile = async (filePath: string): Promise<string> => {
   try {
     // Ensure the file exists
-    const file = await client.getFile(filePath);
+    const file = await client.exists(filePath);
     if (!file) {
       throw new Error('File not found on Nextcloud');
     }
 
-    // Create share options
-    let shareOptions: ICreateShare = {
-      fileSystemElement: file,
-      publicUpload: true, // true for public, false for private
-    };
-
     // Create the share link
-    const share = await client.createShare(shareOptions);
+
+    const share = await client.shares.add(filePath, 3);
 
     if (!share || !share.url) {
       throw new Error('Failed to create share link');
@@ -32,20 +31,26 @@ export const shareFile = async (filePath: string): Promise<string> => {
 
 export const shareFileAsPrivate = async (filePath: string, password: string): Promise<string> => {
   try {
-    const file = await client.getFile(filePath);
+    const file = await client.exists(filePath);
 
     if (!file) {
       throw new Error('File not found on Nextcloud');
     }
-    const createShare: ICreateShare = { fileSystemElement: file }; // Change from fileSystemElement
+    const share = await client.shares.add(filePath, 3, '', 1, '');
 
-    const share = await client.createShare(createShare);
+    if (!share || !share.id) {
+      throw new Error('Failed to create share link');
+    }
 
-    await share.setPassword(password);
+    await client.shares.edit.password(share.id, password);
 
-    // await share.setNote('some note\nnew line');
+    const updatedShare = await client.shares.get(share.id);
 
-    return share.url;
+    if (!updatedShare || !updatedShare.url) {
+      throw new Error('Failed to update share with password');
+    }
+
+    return updatedShare.url;
   } catch (error) {
     console.error('❌ Error sharing file:', error);
     throw error;

@@ -103,8 +103,6 @@ export const FoldersViews: React.FC<FoldersViewsProps> = ({ showActions }) => {
   const [filteredFolder, setFilteredFolder] = useState<FolderData[]>(folders);
   const [filteredFiles, setFilteredFiles] = useState<FileData[]>(files);
   useEffect(() => {
-    console.log(usersData, "data");
-
     if (usersData) {
       setFilteredFolder(
         folders.filter((folder) => {
