@@ -43,34 +43,20 @@ export const downloadFileApi = async (filePath: string) => {
     if (
       !response.data.success ||
       !response.data.result ||
-      !response.data.result.data
+      !response.data.result.uri
     ) {
       throw new Error("Invalid response format from API");
     }
+    const { uri } = response.data.result;
+    //download file from the uri
 
-    // Convert Buffer data (array of numbers) to a Uint8Array
-    const bufferData = new Uint8Array(response.data.result.data);
-
-    // Create a Blob from the Uint8Array
-    const blob = new Blob([bufferData], { type: "application/octet-stream" });
-
-    // Extract filename from the API response or fallback to a default
-    let fileName = filePath.split("/").pop() || "downloaded_file";
-    const contentDisposition = response.headers?.["content-disposition"];
-    if (contentDisposition) {
-      const match = contentDisposition.match(/filename="(.+)"/);
-      if (match && match[1]) {
-        fileName = match[1];
-      }
-    }
-
-    // Create a download link and trigger download
+    const url = uri.href; // Replace with your file URL
     const link = document.createElement("a");
-    link.href = window.URL.createObjectURL(blob);
-    link.download = fileName;
-    document.body.appendChild(link);
+    link.href = url;
+    link.download = ""; // This will download the file with its original name from the URL
+
+    // Trigger the download by clicking the link programmatically
     link.click();
-    document.body.removeChild(link);
 
     return { success: true, message: "File downloaded successfully" };
   } catch (error: any) {

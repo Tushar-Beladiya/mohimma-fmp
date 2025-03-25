@@ -1,6 +1,6 @@
 import NextcloudClient from 'nextcloud-link';
 import { UploadRequestBody } from 'src/types/files.types';
-import { Readable } from 'stream';
+import { Readable, Stream } from 'stream';
 
 const client = new NextcloudClient({
   url: process.env.NEXTCLOUD_URL || 'http://localhost:8080',
@@ -43,13 +43,13 @@ export const uploadFile = async (body: UploadRequestBody, file: Express.Multer.F
     return { error: 'File upload failed' };
   }
 };
-export const downloadFile = async (filePath: string): Promise<Buffer> => {
+export const downloadFile = async (filePath: string): Promise<Stream> => {
   try {
     const file = await client.exists(filePath);
     if (file) {
-      const fileData = Buffer.from(await client.get(filePath), 'binary');
+      const filestream = (await client.getReadStream(filePath)) as Readable;
 
-      return fileData;
+      return filestream;
     }
     throw new Error('File not found');
   } catch (error) {
