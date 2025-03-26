@@ -1,57 +1,7 @@
-// import Client, { Folder } from 'nextcloud-node-client';
-// import { FileItem, FolderContents, FolderItem } from 'src/types/folders.types';
-// const client = new Client();
-
-// export const downloadFolder = async (folderPath: string): Promise<Record<string, string>> => {
-//   try {
-//     const sourceFolder: Folder | null = await client.getFolder(folderPath);
-//     console.log('sourceFolder****************', sourceFolder);
-
-//     if (!sourceFolder) {
-//       throw new Error('Folder not found');
-//     }
-
-//     // Map to store file contents
-//     const fileContents: Record<string, string> = {};
-
-//     const processFolder = async (folder: Folder, currentPath: string) => {
-//       // Fetch files directly as buffers
-//       const files = await folder.getFiles();
-//       console.log('files get****---------------', files);
-
-//       for (const file of files) {
-//         const fileBuffer = await file.getContent();
-//         console.log('fileBuffer****----------------------', fileBuffer);
-
-//         if (!fileBuffer) {
-//           throw new Error(`Failed to retrieve buffer for file: ${file.name}`);
-//         }
-//         const relativePath = currentPath.replace(folderPath, '').replace(/^\//, '') + '/' + file.name;
-//         fileContents[relativePath] = fileBuffer.toString('base64');
-//       }
-
-//       // Recursively process subfolders
-//       const subfolders = await folder.getSubFolders();
-//       console.log('subfolders****----------------------', subfolders);
-//       for (const subfolder of subfolders) {
-//         await processFolder(subfolder, currentPath + '/' + subfolder.name);
-//       }
-//     };
-
-//     await processFolder(sourceFolder, folderPath);
-//     console.log('fileContents****----------------------', fileContents);
-
-//     return fileContents;
-//   } catch (error) {
-//     console.error('Error retrieving folder contents:', error);
-//     throw new Error(error.message || 'Failed to retrieve folder contents');
-//   }
-// };
-
-// new code
-
 import NextcloudClient from 'nextcloud-link';
 import { FileItem, FolderItem } from 'src/types/folders.types';
+import { Readable } from 'stream';
+
 const client = new NextcloudClient({
   url: process.env.NEXTCLOUD_URL || 'http://localhost:8080',
   password: process.env.NEXTCLOUD_PASSWORD,
@@ -147,60 +97,46 @@ export const deleteFolder = async (subFolderPath: string): Promise<void> => {
   }
 };
 
-// export const downloadFolder = async (folderPath: string): Promise<Record<string, string>> => {
-//   try {
-//     // Ensure connectivity
-//     if (!(await client.checkConnectivity())) {
-//       throw new Error('Failed to connect to Nextcloud instance');
-//     }
+export const downloadFolder = async (folderPath: string): Promise<Record<string, string>> => {
+  try {
+    const sourceFolder = await client.exists(folderPath);
+    if (!sourceFolder) {
+      throw new Error('Folder not found');
+    }
 
-//     // Map to store file contents
-//     const fileContents: Record<string, string> = {};
+    const fileContents: Record<string, string> = {};
 
-//     const processFolder = async (currentPath: string) => {
-//       // List files and subfolders
-//       const items = await client.getFolderFileDetails(currentPath);
-//       // console.log('items****----------------------', items);
+    const processFolder = async (currentPath: string) => {
+      // Fetch files in the folder
+      const filesProperties = await client.getFolderFileDetails(currentPath);
+      const files = Array.isArray(filesProperties) ? filesProperties.filter((item) => item.type === 'file') : [];
+      for (const file of files) {
+        const filePath = currentPath + '/' + file.name;
+        const filestream = (await client.getReadStream(filePath)) as Readable;
+        const fileBuffer = await new Promise<Buffer>((resolve, reject) => {
+          const chunks: Buffer[] = [];
+          filestream.on('data', (chunk) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
+          filestream.on('end', () => resolve(Buffer.concat(chunks)));
+          filestream.on('error', (err) => reject(err));
+        });
+        fileContents[filePath] = fileBuffer.toString('base64');
+      }
 
-//       for (const item of items) {
-//         const properPath = decodeURIComponent(item.href.replace(/\/remote\.php\/dav\/files\/admin/g, ''));
-//         const itemPath = `${properPath}`;
+      // Fetch subfolders
+      const folderProperties = await client.getFolderFileDetails(currentPath);
+      const subFolders = Array.isArray(folderProperties) ? folderProperties.filter((item) => item.type === 'directory') : [];
+      for (const subfolder of subFolders) {
+        await processFolder(currentPath + '/' + subfolder.name);
+      }
+    };
 
-//         if (item.type === 'file') {
-//           // Get the stream from nextcloud-link
-//           const readStream = (await client.getReadStream(itemPath)) as Readable;
-
-//           // console.log('readStream****----------------------', readStream);
-//           const response = await client.downloadToStream(itemPath, readStream);
-//           console.log('response****----------------------', response);
-
-//           // // Collect data from the stream
-//           // const chunks: Buffer[] = [];
-//           // for await (const chunk of readStream) {
-//           //   console.log('chunk****----------------------', chunk);
-
-//           //   chunks.push(Buffer.from(chunk));
-//           // }
-//           // const fileBuffer = Buffer.concat(chunks);
-//           // console.log('fileBuffer****----------------------', fileBuffer);
-//           // Store base64-encoded content
-//           // const relativePath = itemPath.replace(folderPath, '').replace(/^\//, '');
-//           // fileContents[relativePath] = fileBuffer.toString('base64');
-//         } else if (item.type === 'directory') {
-//           // Recursively process subfolders
-//           await processFolder(itemPath);
-//         }
-//       }
-//     };
-
-//     await processFolder(folderPath);
-
-//     return fileContents;
-//   } catch (error) {
-//     console.error('Error retrieving folder contents:', error);
-//     throw new Error(error.message || 'Failed to retrieve folder contents');
-//   }
-// };
+    await processFolder(folderPath);
+    return fileContents;
+  } catch (error) {
+    console.error('Error retrieving folder contents:', error);
+    throw new Error(error.message || 'Failed to retrieve folder contents');
+  }
+};
 
 export const renameFolder = async (folderPath: string, newFolderName: string): Promise<string> => {
   try {

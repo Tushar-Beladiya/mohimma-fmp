@@ -78,9 +78,6 @@ export const copyFile = async (sourcePath: string, destinationPath: string): Pro
     const destinationFolder = await client.exists(`/${destinationPath}`);
 
     if (sourceFile && destinationFolder) {
-      // Read the content of the source file
-      const content = await client.get(sourcePath);
-
       // Extract the file name and extension
       const fileName = sourcePath.split('/').pop(); // Get file name
       if (!fileName) throw new Error('File name is undefined');
@@ -99,21 +96,16 @@ export const copyFile = async (sourcePath: string, destinationPath: string): Pro
         newFileName = `${name} (${index})${extension || ''}`;
         index++;
       }
-      const fileBuffer = Buffer.isBuffer(content) ? content : Buffer.from(content, 'binary');
-      // Create the duplicate file with the unique name
-      const mockFile: Express.Multer.File = {
-        fieldname: '',
-        originalname: newFileName,
-        encoding: '7bit',
-        mimetype: 'application/octet-stream',
-        size: fileBuffer.length,
-        buffer: fileBuffer,
-        stream: new Readable(),
-        destination: '',
-        filename: '',
-        path: '',
-      };
-      await uploadFile({ folderName: `/${destinationPath}`, fileName: newFileName }, mockFile);
+
+      const filestream = await client.getReadStream(sourcePath);
+      const fileBuffer = await new Promise<Buffer>((resolve, reject) => {
+        const chunks: Buffer[] = [];
+        filestream.on('data', (chunk) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
+        filestream.on('end', () => resolve(Buffer.concat(chunks)));
+        filestream.on('error', (err) => reject(err));
+      });
+
+      await client.put(`/${destinationPath}/${newFileName}`, fileBuffer);
 
       return { path: `/${destinationPath}/${newFileName}`, name: newFileName };
     }

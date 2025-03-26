@@ -68,23 +68,23 @@ export const deleteFolder = async (req: Request, res: Response): Promise<Respons
   }
 };
 
-// export const downloadFolder = async (req: Request, res: Response): Promise<void> => {
-//   try {
-//     const { folderPath } = req.query;
-//     const folder = await foldersService.downloadFolder(folderPath as string);
-//     res.status(200).json({
-//       success: true,
-//       message: 'folders fetched successfully',
-//       result: folder,
-//     });
-//   } catch (error) {
-//     console.error('❌ Error downloading folder:', error);
-//     res.status(500).json({
-//       success: false,
-//       message: error.message || 'Internal server error',
-//     });
-//   }
-// };
+export const downloadFolder = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const { folderPath } = req.query;
+    const folder = await foldersService.downloadFolder(folderPath as string);
+    res.status(200).json({
+      success: true,
+      message: 'folders fetched successfully',
+      result: folder,
+    });
+  } catch (error) {
+    console.error('❌ Error downloading folder:', error);
+    res.status(500).json({
+      success: false,
+      message: error.message || 'Internal server error',
+    });
+  }
+};
 
 export const renameFolder = async (req: Request, res: Response): Promise<Response> => {
   try {

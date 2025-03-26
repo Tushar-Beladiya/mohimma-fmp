@@ -153,7 +153,13 @@ export const previewFile = async (req: Request, res: Response): Promise<void> =>
       });
     }
 
-    const fileBuffer = await filesService.downloadFile(filePath as string);
+    const filestream = await filesService.downloadFile(filePath as string);
+    const fileBuffer = await new Promise<Buffer>((resolve, reject) => {
+      const chunks: Buffer[] = [];
+      filestream.on('data', (chunk) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
+      filestream.on('end', () => resolve(Buffer.concat(chunks)));
+      filestream.on('error', (err) => reject(err));
+    });
 
     res.status(200).json({
       success: true,

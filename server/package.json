@@ -26,7 +26,6 @@
     "morgan": "^1.10.0",
     "multer": "^1.4.5-lts.1",
     "nextcloud-link": "^1.2.9",
-    "nextcloud-node-client": "^1.8.1",
     "winston": "^3.9.0"
   },
   "devDependencies": {
