@@ -10,7 +10,11 @@ export const createFolderApi = async (
   try {
     const requestBody = { folderName, subFolderPath };
 
-    const response = await axios.post(API_URL, requestBody);
+    const response = await axios.post(API_URL, requestBody, {
+      headers: {
+        Authorization: process.env.REACT_APP_ACCESS_TOKEN,
+      },
+    });
     return response.data;
   } catch (error: any) {
     // Handle error
@@ -31,11 +35,20 @@ export const getFoldersApi = async ({
   try {
     if (name !== undefined && subFolderPath !== null) {
       const response = await axios.get(
-        `${API_URL}?folderPath=${name}&subFolderPath=${subFolderPath}`
+        `${API_URL}?folderPath=${name}&subFolderPath=${subFolderPath}`,
+        {
+          headers: {
+            Authorization: process.env.REACT_APP_ACCESS_TOKEN,
+          },
+        }
       );
       return response.data;
     } else {
-      const response = await axios.get(`${API_URL}`);
+      const response = await axios.get(`${API_URL}`, {
+        headers: {
+          Authorization: process.env.REACT_APP_ACCESS_TOKEN,
+        },
+      });
       return response.data;
     }
   } catch (error: any) {
@@ -49,7 +62,12 @@ export const getFoldersApi = async ({
 export const deleteFolderApi = async (name: string, subFolderPath?: string) => {
   try {
     const response = await axios.delete(
-      `${API_URL}?folderName=${name}&subFolderPath=${subFolderPath}`
+      `${API_URL}?folderName=${name}&subFolderPath=${subFolderPath}`,
+      {
+        headers: {
+          Authorization: process.env.REACT_APP_ACCESS_TOKEN,
+        },
+      }
     );
     return response.data;
   } catch (error: any) {
@@ -67,6 +85,7 @@ export const downloadFolderApi = async (folderPath: string) => {
       {
         headers: {
           "Content-Type": "application/json",
+          Authorization: process.env.REACT_APP_ACCESS_TOKEN,
         },
       }
     );
@@ -89,10 +108,18 @@ export const renameFolderApi = async (
   newFolderName: string
 ) => {
   try {
-    const response = await axios.put(`${API_URL}/rename`, {
-      folderPath,
-      newFolderName,
-    });
+    const response = await axios.put(
+      `${API_URL}/rename`,
+      {
+        folderPath,
+        newFolderName,
+      },
+      {
+        headers: {
+          Authorization: process.env.REACT_APP_ACCESS_TOKEN,
+        },
+      }
+    );
 
     return response.data;
   } catch (error: any) {

@@ -5,7 +5,12 @@ const API_URL = `${process.env.REACT_APP_BACKEND_URL}/api/inviteuser`;
 export const shareWithUserApi = async (username: string, path: string) => {
   try {
     const response = await axios.get(
-      `${API_URL}?username=${username}&folderPath=${path}`
+      `${API_URL}?username=${username}&folderPath=${path}`,
+      {
+        headers: {
+          Authorization: process.env.REACT_APP_ACCESS_TOKEN,
+        },
+      }
     );
     return response.data;
   } catch (error: any) {
@@ -19,6 +24,9 @@ export const getSharedDataApi = async (username?: string, path?: string) => {
   try {
     const response = await axios.get(`${API_URL}/shared`, {
       params: { username, path },
+      headers: {
+        Authorization: process.env.REACT_APP_ACCESS_TOKEN,
+      },
     });
     return response.data;
   } catch (error: any) {
@@ -36,6 +44,9 @@ export const deleteSharedDataApi = async (
   try {
     const response = await axios.delete(`${API_URL}`, {
       params: { shareId: id, shareWith: username },
+      headers: {
+        Authorization: process.env.REACT_APP_ACCESS_TOKEN,
+      },
     });
 
     return response.data;
@@ -52,10 +63,18 @@ export const editSharePermissionApi = async (
   permission: number
 ) => {
   try {
-    const response = await axios.put(`${API_URL}`, {
-      shareId,
-      permission,
-    });
+    const response = await axios.put(
+      `${API_URL}`,
+      {
+        shareId,
+        permission,
+      },
+      {
+        headers: {
+          Authorization: process.env.REACT_APP_ACCESS_TOKEN,
+        },
+      }
+    );
     return response.data;
   } catch (error: any) {
     throw new Error(
@@ -67,7 +86,11 @@ export const editSharePermissionApi = async (
 
 export const getAllUsersApi = async () => {
   try {
-    const response = await axios.get(`${API_URL}/users`);
+    const response = await axios.get(`${API_URL}/users`, {
+      headers: {
+        Authorization: process.env.REACT_APP_ACCESS_TOKEN,
+      },
+    });
     return response.data;
   } catch (error: any) {
     throw new Error(

@@ -2,14 +2,15 @@
 import { Router } from 'express';
 import { filesController } from '../controllers';
 import upload from '../config/multer';
+import authMiddleware from '../middlewares/authMiddleware';
 
 const router = Router();
 
-router.post('/upload', upload.single('file'), filesController.uploadFile);
-router.get('/download', filesController.downloadFile);
-router.get('/preview', filesController.previewFile);
-router.put('/copy', filesController.copyFile);
-router.put('/rename', filesController.renameFile);
-router.delete('/delete', filesController.deleteFile);
+router.post('/upload', authMiddleware, upload.single('file'), filesController.uploadFile);
+router.get('/download', authMiddleware, filesController.downloadFile);
+router.get('/preview', authMiddleware, filesController.previewFile);
+router.put('/copy', authMiddleware, filesController.copyFile);
+router.put('/rename', authMiddleware, filesController.renameFile);
+router.delete('/delete', authMiddleware, filesController.deleteFile);
 
 export default router;
