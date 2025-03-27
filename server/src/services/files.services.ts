@@ -1,140 +1,112 @@
-import NextcloudClient from 'nextcloud-link';
-import { UploadRequestBody } from 'src/types/files.types';
 import { Readable, Stream } from 'stream';
-
-const client = new NextcloudClient({
-  url: process.env.NEXTCLOUD_URL || 'http://localhost:8080',
-  password: process.env.NEXTCLOUD_PASSWORD,
-  username: process.env.NEXTCLOUD_USERNAME,
-});
+import { client } from '../config/nextCloudConfig';
+import HttpError from '../helpers/error';
+import { UploadRequestBody } from '../types/files.types';
 
 export const uploadFile = async (body: UploadRequestBody, file: Express.Multer.File): Promise<{}> => {
-  try {
-    const { folderName, subFolderPath, fileName } = body;
-    const actualFileName = fileName || file.originalname;
-    let remoteFolder = '';
+  const { folderName, subFolderPath, fileName } = body;
+  const actualFileName = fileName || file.originalname;
+  let remoteFolder = '';
 
-    if (folderName && subFolderPath) {
-      remoteFolder = `/${subFolderPath}`;
-    } else if (folderName) {
-      remoteFolder = `/${folderName}`;
-    }
-
-    // Ensure folder exists
-    const folderExists = await client.exists(remoteFolder);
-    if (!folderExists) {
-      await client.createFolderHierarchy(remoteFolder); // Create the folder if it doesn't exist
-    }
-
-    // Full file path
-    const remoteFilePath = `${remoteFolder}/${actualFileName}`;
-
-    // Check if file already exists
-    const fileExists = await client.exists(remoteFilePath);
-    if (fileExists) {
-      return { error: 'File already exists', path: remoteFilePath };
-    }
-
-    await client.put(remoteFilePath, file.buffer);
-
-    return { path: remoteFilePath, name: actualFileName };
-  } catch (error) {
-    console.error('Upload error:', error);
-    return { error: 'File upload failed' };
+  if (folderName && subFolderPath) {
+    remoteFolder = `/${subFolderPath}`;
+  } else if (folderName) {
+    remoteFolder = `/${folderName}`;
   }
+
+  // Ensure folder exists
+  const folderExists = await client.exists(remoteFolder);
+  if (!folderExists) {
+    await client.createFolderHierarchy(remoteFolder); // Create the folder if it doesn't exist
+  }
+
+  // Full file path
+  const remoteFilePath = `${remoteFolder}/${actualFileName}`;
+
+  // Check if file already exists
+  const fileExists = await client.exists(remoteFilePath);
+
+  if (fileExists) {
+    throw new HttpError(409, 'File already exists');
+  }
+
+  await client.put(remoteFilePath, file.buffer);
+
+  return { path: remoteFilePath, name: actualFileName };
 };
-export const downloadFile = async (filePath: string): Promise<Stream> => {
-  try {
-    const file = await client.exists(filePath);
-    if (file) {
-      const filestream = (await client.getReadStream(filePath)) as Readable;
 
-      return filestream;
-    }
-    throw new Error('File not found');
-  } catch (error) {
-    console.error('Error downloading file:', error);
-    throw error; // Better to throw than return empty buffer
+export const downloadFile = async (filePath: string): Promise<Stream> => {
+  const file = await client.exists(filePath);
+  if (file) {
+    const filestream = (await client.getReadStream(filePath)) as Readable;
+
+    return filestream;
   }
+  throw new HttpError(404, 'File not found');
 };
 
 export const deleteFile = async (filePath: string): Promise<string> => {
-  try {
-    const file = await client.exists(filePath);
-    if (file) {
-      await client.remove(filePath);
-      return `File ${filePath} deleted successfully.`;
-    }
-  } catch (error) {
-    console.error(error);
-    return '';
+  const file = await client.exists(filePath);
+  if (file) {
+    await client.remove(filePath);
+    return `File ${filePath} deleted successfully.`;
   }
-  return '';
+  throw new HttpError(404, 'File not found');
 };
 
 export const copyFile = async (sourcePath: string, destinationPath: string): Promise<{}> => {
-  try {
-    const sourceFile = await client.exists(sourcePath);
-    const destinationFolder = await client.exists(`/${destinationPath}`);
+  const sourceFile = await client.exists(sourcePath);
+  const destinationFolder = await client.exists(`/${destinationPath}`);
 
-    if (sourceFile && destinationFolder) {
-      // Extract the file name and extension
-      const fileName = sourcePath.split('/').pop(); // Get file name
-      if (!fileName) throw new Error('File name is undefined');
-      const match = fileName.match(/(.*?)(\.[^.]+)?$/);
-      if (!match) throw new Error('File name match is null');
-      const [name, extension] = match.slice(1); // Separate name & extension
+  if (sourceFile && destinationFolder) {
+    // Extract the file name and extension
+    const fileName = sourcePath.split('/').pop(); // Get file name
+    if (!fileName) throw new Error('File name is undefined');
+    const match = fileName.match(/(.*?)(\.[^.]+)?$/);
+    if (!match) throw new Error('File name match is null');
+    const [name, extension] = match.slice(1); // Separate name & extension
 
-      // Get list of files in destination folder
-      const existingFiles = await client.getFiles(`/${destinationPath}`);
-      const existingFileNames = existingFiles.map((file) => file);
+    // Get list of files in destination folder
+    const existingFiles = await client.getFiles(`/${destinationPath}`);
+    const existingFileNames = existingFiles.map((file) => file);
 
-      // Generate a unique file name by appending an index if needed
-      let newFileName = fileName;
-      let index = 1;
-      while (existingFileNames.some((n) => n.includes(newFileName))) {
-        newFileName = `${name} (${index})${extension || ''}`;
-        index++;
-      }
-
-      const filestream = await client.getReadStream(sourcePath);
-      const fileBuffer = await new Promise<Buffer>((resolve, reject) => {
-        const chunks: Buffer[] = [];
-        filestream.on('data', (chunk) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
-        filestream.on('end', () => resolve(Buffer.concat(chunks)));
-        filestream.on('error', (err) => reject(err));
-      });
-
-      await client.put(`/${destinationPath}/${newFileName}`, fileBuffer);
-
-      return { path: `/${destinationPath}/${newFileName}`, name: newFileName };
+    // Generate a unique file name by appending an index if needed
+    let newFileName = fileName;
+    let index = 1;
+    while (existingFileNames.some((n) => n.includes(newFileName))) {
+      newFileName = `${name} (${index})${extension || ''}`;
+      index++;
     }
-  } catch (error) {
-    console.error(error);
-    return { error: 'File copy failed' };
+
+    const filestream = await client.getReadStream(sourcePath);
+    const fileBuffer = await new Promise<Buffer>((resolve, reject) => {
+      const chunks: Buffer[] = [];
+      filestream.on('data', (chunk) => chunks.push(Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)));
+      filestream.on('end', () => resolve(Buffer.concat(chunks)));
+      filestream.on('error', (err) => reject(err));
+    });
+
+    await client.put(`/${destinationPath}/${newFileName}`, fileBuffer);
+
+    return { path: `/${destinationPath}/${newFileName}`, name: newFileName };
   }
-  return { error: 'File copy failed' };
+  throw new HttpError(404, 'Failed to copy file');
 };
 
 export const renameFile = async (filePath: string, newFileName: string): Promise<{}> => {
-  try {
-    const file = await client.exists(filePath);
-    if (file) {
-      // Extract file extension
-      const extensionMatch = filePath.match(/\.[^.]+$/); // Matches last dot followed by characters
-      const extension = extensionMatch ? extensionMatch[0] : ''; // Keep extension if found
+  const file = await client.exists(filePath);
+  if (file) {
+    // Extract file extension
+    const extensionMatch = filePath.match(/\.[^.]+$/); // Matches last dot followed by characters
+    const extension = extensionMatch ? extensionMatch[0] : ''; // Keep extension if found
 
-      // Append original extension to new file name
-      const newFilePath = filePath.replace(/[^/]+$/, `${newFileName}${extension}`);
+    // Append original extension to new file name
+    const newFilePath = filePath.replace(/[^/]+$/, `${newFileName}${extension}`);
 
-      // Move the file with its extension
-      await client.rename(filePath, `${newFileName}${extension}`);
+    // Move the file with its extension
+    await client.rename(filePath, `${newFileName}${extension}`);
 
-      return { path: newFilePath, newFileName: `${newFileName}${extension}` };
-    }
-  } catch (error) {
-    console.error('Rename failed:', error);
-    return { error: 'file not found' };
+    return { path: newFilePath, newFileName: `${newFileName}${extension}` };
   }
-  return { error: 'file not found' };
+  throw new HttpError(404, 'File not found');
 };

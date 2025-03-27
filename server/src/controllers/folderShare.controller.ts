@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import HttpError from '../helpers/error';
 import { folderShareService } from '../services';
 
 export const shareFolderAsPublic = async (req: Request, res: Response): Promise<Response> => {
@@ -6,10 +7,7 @@ export const shareFolderAsPublic = async (req: Request, res: Response): Promise<
     const { folderPath } = req.query;
 
     if (!folderPath || typeof folderPath !== 'string') {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing or invalid folderPath parameter.',
-      });
+      throw new HttpError(422, 'Missing or invalid folderPath parameter.');
     }
 
     const shareUrl = await folderShareService.shareFolderAsPublic(folderPath as string);
@@ -19,12 +17,17 @@ export const shareFolderAsPublic = async (req: Request, res: Response): Promise<
       message: 'Folder shared successfully',
       result: shareUrl,
     });
-  } catch (error) {
-    console.error('❌ Error sharing folder:', error);
+  } catch (err) {
+    if (err instanceof HttpError) {
+      return res.status(err.statusCode).json({
+        success: false,
+        message: err.message,
+      });
+    }
     return res.status(500).json({
       success: false,
       message: 'Failed to share folder',
-      error: error.message,
+      error: err.message,
     });
   }
 };
@@ -34,17 +37,14 @@ export const shareFolderAsPrivate = async (req: Request, res: Response): Promise
     const { folderPath, password } = req.query;
 
     if (!folderPath && !password) {
-      return res.status(400).json({ success: false, message: 'folderPath and password are required' });
+      throw new HttpError(422, 'folderPath and password are required');
     }
 
     //VALIDATION FOR STRONG PASSWORD THAT WOULD BE CHARACTER, SPACIAL CHARATER, NUMBER, AND MINIMUM OF 8 CHARACTERS like it would be StrongP@ssw0rd!
 
     const passwordRegex = new RegExp('^(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[^a-zA-Z0-9]).{8,}$');
     if (!passwordRegex.test(password as string)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Password must contain at least 8 characters, one letter, one number and one special character',
-      });
+      throw new HttpError(422, 'Password must contain at least 8 characters, one letter, one number and one special character');
     }
 
     const shareUrl = await folderShareService.shareFolderAsPrivate(folderPath as string, password as string);
@@ -54,12 +54,17 @@ export const shareFolderAsPrivate = async (req: Request, res: Response): Promise
       message: 'Folder shared successfully',
       result: shareUrl,
     });
-  } catch (error) {
-    console.error('❌ Error sharing folder:', error);
+  } catch (err) {
+    if (err instanceof HttpError) {
+      return res.status(err.statusCode).json({
+        success: false,
+        message: err.message,
+      });
+    }
     return res.status(500).json({
       success: false,
       message: 'Failed to share folder',
-      error: error.message,
+      error: err.message,
     });
   }
 };

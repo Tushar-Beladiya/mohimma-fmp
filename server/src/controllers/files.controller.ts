@@ -1,14 +1,12 @@
 import { Request, Response } from 'express';
 import { filesService } from '../services';
+import HttpError from '../helpers/error';
 
 export const uploadFile = async (req: Request, res: Response): Promise<Response> => {
   try {
     const file = req.file as Express.Multer.File;
     if (!file) {
-      return res.status(400).json({
-        success: false,
-        message: 'File is required',
-      });
+      throw new HttpError(422, 'File is required');
     }
 
     const fileData = await filesService.uploadFile(req.body, file);
@@ -18,11 +16,16 @@ export const uploadFile = async (req: Request, res: Response): Promise<Response>
       message: `File uploaded successfully`,
       result: fileData,
     });
-  } catch (error) {
-    console.error('❌ Error uploading file:', error);
+  } catch (err) {
+    if (err instanceof HttpError) {
+      return res.status(err.statusCode).json({
+        success: false,
+        message: err.message,
+      });
+    }
     return res.status(500).json({
       success: false,
-      message: error.message || 'Internal server error',
+      message: err.message || 'Internal server error',
     });
   }
 };
@@ -32,10 +35,7 @@ export const downloadFile = async (req: Request, res: Response): Promise<void> =
     const { filePath } = req.query;
 
     if (!filePath || typeof filePath !== 'string') {
-      res.status(400).json({
-        success: false,
-        message: 'Missing or invalid filePath parameter.',
-      });
+      throw new HttpError(400, 'Missing or invalid filePath parameter.');
     }
 
     const fileBuffer = await filesService.downloadFile(filePath as string);
@@ -52,12 +52,17 @@ export const downloadFile = async (req: Request, res: Response): Promise<void> =
       message: 'File download successful',
       result: fileBuffer,
     });
-  } catch (error) {
-    console.error('❌ Error downloading file:', error);
+  } catch (err) {
+    if (err instanceof HttpError) {
+      res.status(err.statusCode).json({
+        success: false,
+        message: err.message,
+      });
+    }
     res.status(500).json({
       success: false,
       message: 'Failed to download file',
-      error: error.message,
+      error: err.message,
     });
   }
 };
@@ -67,10 +72,7 @@ export const deleteFile = async (req: Request, res: Response): Promise<Response>
     const { filePath } = req.query;
 
     if (!filePath || typeof filePath !== 'string') {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing or invalid filePath parameter.',
-      });
+      throw new HttpError(400, 'Missing or invalid filePath parameter.');
     }
 
     const path = await filesService.deleteFile(filePath);
@@ -80,11 +82,16 @@ export const deleteFile = async (req: Request, res: Response): Promise<Response>
       message: `File deleted successfully`,
       result: path,
     });
-  } catch (error) {
-    console.error('❌ Error deleting file:', error);
+  } catch (err) {
+    if (err instanceof HttpError) {
+      return res.status(err.statusCode).json({
+        success: false,
+        message: err.message,
+      });
+    }
     return res.status(500).json({
       success: false,
-      message: error.message || 'Internal server error',
+      message: err.message || 'Internal server error',
     });
   }
 };
@@ -94,10 +101,7 @@ export const copyFile = async (req: Request, res: Response): Promise<Response> =
     const { sourcePath, destinationPath } = req.body;
 
     if (!sourcePath || !destinationPath) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing sourcePath or destinationPath parameter.',
-      });
+      throw new HttpError(400, 'Missing sourcePath or destinationPath parameter.');
     }
 
     const path = await filesService.copyFile(sourcePath, destinationPath);
@@ -107,11 +111,16 @@ export const copyFile = async (req: Request, res: Response): Promise<Response> =
       message: `File copied successfully`,
       result: path,
     });
-  } catch (error) {
-    console.error('❌ Error copying file:', error);
+  } catch (err) {
+    if (err instanceof HttpError) {
+      return res.status(err.statusCode).json({
+        success: false,
+        message: err.message,
+      });
+    }
     return res.status(500).json({
       success: false,
-      message: error.message || 'Internal server error',
+      message: err.message || 'Internal server error',
     });
   }
 };
@@ -121,10 +130,7 @@ export const renameFile = async (req: Request, res: Response): Promise<Response>
     const { filePath, newFileName } = req.body;
 
     if (!filePath || !newFileName) {
-      return res.status(400).json({
-        success: false,
-        message: 'Missing filePath or newFileName parameter.',
-      });
+      throw new HttpError(400, 'Missing filePath or newFileName parameter.');
     }
 
     const fileData = await filesService.renameFile(filePath, newFileName);
@@ -133,11 +139,16 @@ export const renameFile = async (req: Request, res: Response): Promise<Response>
       message: `File renamed successfully`,
       result: { ...fileData, oldFileName: filePath.split('/').pop() },
     });
-  } catch (error) {
-    console.error('❌ Error renaming file:', error);
+  } catch (err) {
+    if (err instanceof HttpError) {
+      return res.status(err.statusCode).json({
+        success: false,
+        message: err.message,
+      });
+    }
     return res.status(500).json({
       success: false,
-      message: error.message || 'Internal server error',
+      message: err.message || 'Internal server error',
     });
   }
 };
@@ -147,10 +158,7 @@ export const previewFile = async (req: Request, res: Response): Promise<void> =>
     const { filePath } = req.query;
 
     if (!filePath || typeof filePath !== 'string') {
-      res.status(400).json({
-        success: false,
-        message: 'Missing or invalid filePath parameter.',
-      });
+      throw new HttpError(400, 'Missing filePath or newFileName parameter.');
     }
 
     const filestream = await filesService.downloadFile(filePath as string);
@@ -166,12 +174,17 @@ export const previewFile = async (req: Request, res: Response): Promise<void> =>
       message: 'File preview successful',
       result: fileBuffer,
     });
-  } catch (error) {
-    console.error('❌ Error previewing file:', error);
+  } catch (err) {
+    if (err instanceof HttpError) {
+      res.status(err.statusCode).json({
+        success: false,
+        message: err.message,
+      });
+    }
     res.status(500).json({
       success: false,
       message: 'Failed to preview file',
-      error: error.message,
+      error: err.message,
     });
   }
 };
