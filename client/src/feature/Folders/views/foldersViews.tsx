@@ -98,7 +98,7 @@ export const FoldersViews: React.FC<FoldersViewsProps> = ({ showActions }) => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   //  data with user
   const { setFolderPath } = useFolder();
-  const { usersData, setUsersData } = useFolder();
+  const { usersData } = useFolder();
   const { sharedFolders } = useSelector((state: RootState) => state.inviteUser);
   const [filteredFolder, setFilteredFolder] = useState<FolderData[]>(folders);
   const [filteredFiles, setFilteredFiles] = useState<FileData[]>(files);
@@ -220,10 +220,12 @@ export const FoldersViews: React.FC<FoldersViewsProps> = ({ showActions }) => {
       {filteredFolder.map((folder: FolderData) => (
         <div
           key={folder.name}
-          className="bg-gray-200/70 p-2 rounded-lg shadow-md hover:shadow-lg cursor-pointer flex items-center justify-between">
+          className="bg-gray-200/70 p-2 rounded-lg shadow-md hover:shadow-lg cursor-pointer flex items-center justify-between"
+        >
           <div
             className="flex items-center gap-2"
-            onClick={() => handleFolderClick(folder.name, folder.path)}>
+            onClick={() => handleFolderClick(folder.name, folder.path)}
+          >
             <div className="bg-sky-800/10 p-2 rounded-xl">
               <PiFolderSimple className="text-2xl" />
             </div>
@@ -270,10 +272,12 @@ export const FoldersViews: React.FC<FoldersViewsProps> = ({ showActions }) => {
       {filteredFiles.map((file: FileData) => (
         <div
           key={file.name}
-          className="bg-white border border-gray-100 p-3 rounded-lg shadow-sm hover:shadow-md hover:border-blue-100 transition-all duration-200 flex items-center justify-between relative group">
+          className="bg-white border border-gray-100 p-3 rounded-lg shadow-sm hover:shadow-md hover:border-blue-100 transition-all duration-200 flex items-center justify-between relative group"
+        >
           <div
             className="flex items-center gap-3"
-            onClick={() => handleFileClick(file)}>
+            onClick={() => handleFileClick(file)}
+          >
             <div className="bg-blue-50 p-2.5 rounded-lg text-blue-500 group-hover:bg-blue-100 transition-colors">
               {getFileIcon(file.name)}
             </div>

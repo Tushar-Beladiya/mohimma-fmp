@@ -13,7 +13,12 @@ export const shareFolderApi = async (
       params.publicAccess = true;
     }
 
-    const response = await axios.get(`${API_URL}/public`, { params });
+    const response = await axios.get(`${API_URL}/public`, {
+      params,
+      headers: {
+        Authorization: process.env.REACT_APP_ACCESS_TOKEN,
+      },
+    });
 
     return response.data;
   } catch (error: any) {
@@ -30,6 +35,9 @@ export const shareFolderAsPrivateApi = async (
   try {
     const response = await axios.get(`${API_URL}/private`, {
       params: { folderPath, password },
+      headers: {
+        Authorization: process.env.REACT_APP_ACCESS_TOKEN,
+      },
     });
     return response.data;
   } catch (error: any) {

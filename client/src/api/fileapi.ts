@@ -20,6 +20,7 @@ export const uploadFileApi = async (
     const response = await axios.post(`${API_URL}/upload`, formData, {
       headers: {
         "Content-Type": "multipart/form-data",
+        Authorization: process.env.REACT_APP_ACCESS_TOKEN,
       },
     });
 
@@ -37,6 +38,9 @@ export const downloadFileApi = async (filePath: string) => {
     const response = await axios.get(`${API_URL}/download`, {
       params: { filePath },
       responseType: "json",
+      headers: {
+        Authorization: process.env.REACT_APP_ACCESS_TOKEN,
+      },
     });
 
     // Ensure the response contains expected buffer data
@@ -72,6 +76,9 @@ export const deleteFileApi = async (filePath: string) => {
   try {
     const response = await axios.delete(`${API_URL}/delete`, {
       params: { filePath },
+      headers: {
+        Authorization: process.env.REACT_APP_ACCESS_TOKEN,
+      },
     });
 
     return response.data;
@@ -88,7 +95,11 @@ export const copyFileApi = async (
 ) => {
   const requestBody = { sourcePath, destinationPath };
   try {
-    const response = await axios.put(`${API_URL}/copy`, requestBody);
+    const response = await axios.put(`${API_URL}/copy`, requestBody, {
+      headers: {
+        Authorization: process.env.REACT_APP_ACCESS_TOKEN,
+      },
+    });
 
     return response.data;
   } catch (error: any) {
@@ -101,7 +112,11 @@ export const copyFileApi = async (
 export const renameFileApi = async (filePath: string, newFileName: string) => {
   const requestBody = { filePath, newFileName };
   try {
-    const response = await axios.put(`${API_URL}/rename`, requestBody);
+    const response = await axios.put(`${API_URL}/rename`, requestBody, {
+      headers: {
+        Authorization: process.env.REACT_APP_ACCESS_TOKEN,
+      },
+    });
 
     return response.data;
   } catch (error: any) {
@@ -113,7 +128,14 @@ export const renameFileApi = async (filePath: string, newFileName: string) => {
 
 export const filePreviewApi = async (filePath: string) => {
   try {
-    const response = await axios.get(`${API_URL}/preview?filePath=${filePath}`);
+    const response = await axios.get(
+      `${API_URL}/preview?filePath=${filePath}`,
+      {
+        headers: {
+          Authorization: process.env.REACT_APP_ACCESS_TOKEN,
+        },
+      }
+    );
     return response.data;
   } catch (error: any) {
     throw new Error(
