@@ -132,3 +132,19 @@ export const renameFolder = async (req: Request, res: Response): Promise<Respons
     });
   }
 };
+
+export const getAllFilesAndFoldersWithNestedFolders = async (_req: Request, res: Response): Promise<Response> => {
+  try {
+    const folders = await foldersService.getAllFilesAndFoldersWithNestedFolders();
+    return res.status(200).json({
+      success: true,
+      message: 'Folders fetched successfully',
+      result: folders,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: err.message || 'Internal server error',
+    });
+  }
+};

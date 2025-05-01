@@ -110,3 +110,45 @@ export const renameFolder = async (folderPath: string, newFolderName: string): P
     throw new HttpError(422, 'New folder name is required');
   }
 };
+
+interface NestedItem {
+  name: string;
+  path: string;
+  type: string;
+  nested?: NestedItem[];
+}
+
+export const getAllFilesAndFoldersWithNestedFolders = async (): Promise<{
+  items: NestedItem[];
+}> => {
+  async function processPath(currentPath: string): Promise<NestedItem[]> {
+    const fileDetails = await client.getFolderFileDetails(currentPath);
+    const items: NestedItem[] = [];
+
+    for (const item of fileDetails) {
+      const decodedName = decodeURIComponent(item.name);
+      const decodedPath = decodeURIComponent(item.href.replace(/\/remote\.php\/dav\/files\/admin/g, ''));
+
+      const itemInfo: NestedItem = {
+        name: decodedName,
+        path: decodedPath,
+        type: item.type,
+      };
+
+      if (item.type === 'directory') {
+        // Recursively process nested folders and add them to the nested array
+        itemInfo.nested = await processPath(decodedPath);
+      }
+
+      items.push(itemInfo);
+    }
+
+    return items;
+  }
+
+  const rootItems = await processPath('/');
+
+  return {
+    items: rootItems,
+  };
+};
