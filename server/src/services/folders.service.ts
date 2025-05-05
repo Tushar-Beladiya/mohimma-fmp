@@ -73,6 +73,8 @@ export const downloadFolder = async (folderPath: string): Promise<Record<string,
   const fileContents: Record<string, string> = {};
 
   const processFolder = async (currentPath: string) => {
+    let hasFiles = false;
+
     // Fetch files in the folder
     const filesProperties = await client.getFolderFileDetails(currentPath);
     const files = Array.isArray(filesProperties) ? filesProperties.filter((item) => item.type === 'file') : [];
@@ -86,6 +88,7 @@ export const downloadFolder = async (folderPath: string): Promise<Record<string,
         filestream.on('error', (err) => reject(err));
       });
       fileContents[filePath] = fileBuffer.toString('base64');
+      hasFiles = true; // Indicate that this folder has files
     }
 
     // Fetch subfolders
@@ -93,6 +96,11 @@ export const downloadFolder = async (folderPath: string): Promise<Record<string,
     const subFolders = Array.isArray(folderProperties) ? folderProperties.filter((item) => item.type === 'directory') : [];
     for (const subfolder of subFolders) {
       await processFolder(currentPath + '/' + subfolder.name);
+    }
+
+    // If the folder has no files and no subfolders, represent it as an empty folder
+    if (!hasFiles && subFolders.length === 0) {
+      fileContents[currentPath] = ''; // Empty folder indicator
     }
   };
 
