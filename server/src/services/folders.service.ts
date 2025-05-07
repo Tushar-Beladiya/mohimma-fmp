@@ -4,7 +4,7 @@ import { FileItem, FolderItem } from '../types/folders.types';
 import { Readable } from 'stream';
 
 const checkFolderExists = async (path: string): Promise<boolean> => {
-  return !!(await client.get(path));
+  return !!(await client.exists(path));
 };
 
 export const createFolder = async (folderName: string, subFolderPath?: string) => {
