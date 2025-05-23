@@ -12,6 +12,7 @@ import router from './routes';
 const app: express.Application = express();
 
 app.use(cors());
+
 app.use(httpLogger);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));

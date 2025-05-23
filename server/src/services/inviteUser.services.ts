@@ -148,12 +148,12 @@ export const deleteShareItem = async (shareId: number, shareWith: string) => {
   }
 
   // Check if user has any remaining shares
-  if (shareWith !== null) {
-    const data = await getSharedData(shareWith);
-    if (data) {
-      deleteUser(shareWith);
-    }
-  }
+  // if (shareWith !== null) {
+  //   const data = await getSharedData(shareWith);
+  //   if (data) {
+  //     deleteUser(shareWith);
+  //   }
+  // }
 
   return deletedIds;
 };

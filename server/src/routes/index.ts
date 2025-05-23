@@ -12,8 +12,8 @@ const router = Router();
 // Define base paths for different route modules
 router.use('/folder', authMiddleware, folderRoutes);
 router.use('/file', authMiddleware, fileRoutes);
-router.use('/fileshare', authMiddleware, fileShareRoutes);
-router.use('/foldershare', authMiddleware, folderShareRoutes);
+router.use('/fileshare', fileShareRoutes);
+router.use('/foldershare', folderShareRoutes);
 router.use('/inviteuser', authMiddleware, inviteUserRoutes);
 
 export default router;

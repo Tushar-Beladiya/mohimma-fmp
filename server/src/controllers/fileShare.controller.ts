@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import { Request, Response } from 'express';
 import { fileShareService } from '../services';
 import HttpError from '../helpers/error';
@@ -64,6 +65,36 @@ export const shareFileAsPrivate = async (req: Request, res: Response): Promise<R
     return res.status(500).json({
       success: false,
       message: 'Failed to share file',
+      error: err.message,
+    });
+  }
+};
+
+export const getSharedFile = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const { token } = req.params;
+
+    if (!token) {
+      throw new HttpError(422, 'Share token is required');
+    }
+
+    const contents = await fileShareService.getSharedFile(token);
+
+    return res.status(200).json({
+      success: true,
+      message: 'File retrieved successfully',
+      result: contents,
+    });
+  } catch (err) {
+    if (err instanceof HttpError) {
+      return res.status(err.statusCode).json({
+        success: false,
+        message: err.message,
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: 'File retrieved successfully',
       error: err.message,
     });
   }

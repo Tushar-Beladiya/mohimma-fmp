@@ -30,6 +30,43 @@ export const uploadFile = async (req: Request, res: Response): Promise<Response>
   }
 };
 
+// export const downloadFile = async (req: Request, res: Response): Promise<void> => {
+//   try {
+//     const { filePath } = req.query;
+
+//     if (!filePath || typeof filePath !== 'string') {
+//       throw new HttpError(400, 'Missing or invalid filePath parameter.');
+//     }
+
+//     const fileBuffer = await filesService.downloadFile(filePath as string);
+
+//     // Extract filename from the path
+//     const fileName = (typeof filePath === 'string' ? filePath : '').split('/').pop() || 'downloaded_file';
+
+//     // Set response headers for file download
+//     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+//     res.setHeader('Content-Type', 'application/octet-stream');
+
+//     res.status(200).json({
+//       success: true,
+//       message: 'File download successful',
+//       result: fileBuffer,
+//     });
+//   } catch (err) {
+//     if (err instanceof HttpError) {
+//       res.status(err.statusCode).json({
+//         success: false,
+//         message: err.message,
+//       });
+//     }
+//     res.status(500).json({
+//       success: false,
+//       message: 'Failed to download file',
+//       error: err.message,
+//     });
+//   }
+// };
+
 export const downloadFile = async (req: Request, res: Response): Promise<void> => {
   try {
     const { filePath } = req.query;
@@ -38,31 +75,22 @@ export const downloadFile = async (req: Request, res: Response): Promise<void> =
       throw new HttpError(400, 'Missing or invalid filePath parameter.');
     }
 
-    const fileBuffer = await filesService.downloadFile(filePath as string);
+    const fileStream = await filesService.downloadFile(filePath);
 
-    // Extract filename from the path
-    const fileName = (typeof filePath === 'string' ? filePath : '').split('/').pop() || 'downloaded_file';
+    const fileName = filePath.split('/').pop() || 'downloaded_file';
 
-    // Set response headers for file download
+    // Set headers
     res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
     res.setHeader('Content-Type', 'application/octet-stream');
 
-    res.status(200).json({
-      success: true,
-      message: 'File download successful',
-      result: fileBuffer,
-    });
-  } catch (err) {
-    if (err instanceof HttpError) {
-      res.status(err.statusCode).json({
-        success: false,
-        message: err.message,
-      });
-    }
-    res.status(500).json({
+    // Pipe the stream directly
+    fileStream.pipe(res);
+  } catch (err: any) {
+    const status = err instanceof HttpError ? err.statusCode : 500;
+    const message = err instanceof HttpError ? err.message : 'Failed to download file';
+    res.status(status).json({
       success: false,
-      message: 'Failed to download file',
-      error: err.message,
+      message,
     });
   }
 };

@@ -6,5 +6,6 @@ const router = Router();
 
 router.get('/public', folderShareController.shareFolderAsPublic);
 router.get('/private', folderShareController.shareFolderAsPrivate);
+router.get('/shared/:token', folderShareController.getSharedFolderContents);
 
 export default router;
