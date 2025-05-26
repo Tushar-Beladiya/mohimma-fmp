@@ -69,37 +69,6 @@ export const shareFolderAsPrivate = async (req: Request, res: Response): Promise
   }
 };
 
-// export const getSharedFolderContents = async (req: Request, res: Response): Promise<Response> => {
-//   try {
-//     const { token } = req.params;
-//     const { path } = req.query; // Add this to get the path parameter
-
-//     if (!token) {
-//       throw new HttpError(422, 'Share token is required');
-//     }
-
-//     const contents = await folderShareService.getSharedFolderContents(token, path as string);
-
-//     return res.status(200).json({
-//       success: true,
-//       message: 'Folder contents retrieved successfully',
-//       result: contents,
-//     });
-//   } catch (err) {
-//     if (err instanceof HttpError) {
-//       return res.status(err.statusCode).json({
-//         success: false,
-//         message: err.message,
-//       });
-//     }
-//     return res.status(500).json({
-//       success: false,
-//       message: 'Failed to retrieve folder contents',
-//       error: err.message,
-//     });
-//   }
-// };
-
 export const getSharedFolderContents = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { token } = req.params;

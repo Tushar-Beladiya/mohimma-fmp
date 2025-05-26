@@ -73,12 +73,14 @@ export const shareFileAsPrivate = async (req: Request, res: Response): Promise<R
 export const getSharedFile = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { token } = req.params;
+    const rawPassword = req.query.password as string;
+    const password = decodeURIComponent(rawPassword || '');
 
     if (!token) {
       throw new HttpError(422, 'Share token is required');
     }
 
-    const contents = await fileShareService.getSharedFile(token);
+    const contents = await fileShareService.getSharedFile(token, password);
 
     return res.status(200).json({
       success: true,

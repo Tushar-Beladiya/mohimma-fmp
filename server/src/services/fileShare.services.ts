@@ -1,7 +1,6 @@
-/* eslint-disable prettier/prettier */
-import HttpError from '../helpers/error';
-import { client, config } from '../config/nextCloudConfig';
 import { createClient } from 'webdav';
+import { client, config } from '../config/nextCloudConfig';
+import HttpError from '../helpers/error';
 
 interface SharedFile {
   name: string;
@@ -11,16 +10,14 @@ interface SharedFile {
 
 interface SharedFileResponse {
   file: SharedFile;
+  isPrivate?: boolean;
 }
 
 export const shareFile = async (filePath: string): Promise<string> => {
-  // Ensure the file exists
   const file = await client.exists(filePath);
   if (!file) {
     throw new HttpError(404, 'File not found');
   }
-
-  // Create the share link
 
   const share = await client.shares.add(filePath, 3);
   if (!share?.token) {
@@ -50,16 +47,33 @@ export const shareFileAsPrivate = async (filePath: string, password: string): Pr
     throw new HttpError(500, 'Failed to update share with password');
   }
 
-  return updatedShare.url;
+  // return updatedShare.url;
+  return `${config.frontendUrl}/sharedFile/file/${updatedShare.token}`;
 };
 
-export const getSharedFile = async (token: string): Promise<SharedFileResponse> => {
+export const getSharedFile = async (token: string, password?: string): Promise<SharedFileResponse> => {
   try {
     const shares = await client.shares.list();
     const share = shares.find((s) => s.token === token);
 
     if (!share?.url) {
       throw new HttpError(404, 'Shared file not found or invalid share URL');
+    }
+
+    let isPrivate = share.shareType === 3;
+
+    // If password is required, check it
+    if (isPrivate) {
+      const webdavClient = createClient(`${process.env.NEXTCLOUD_URL}/public.php/webdav/`, {
+        username: token,
+        password: password || '',
+      });
+
+      try {
+        await webdavClient.getDirectoryContents('/');
+      } catch (error) {
+        throw new HttpError(401, password ? 'Invalid password for shared file' : 'Password required for this shared file');
+      }
     }
 
     const baseUrl = share.url.split('/index.php/s/')[0];
@@ -78,6 +92,7 @@ export const getSharedFile = async (token: string): Promise<SharedFileResponse> 
         path: fileData.filename,
         type: fileData.type,
       },
+      isPrivate,
     };
   } catch (error) {
     if (error instanceof HttpError) {
